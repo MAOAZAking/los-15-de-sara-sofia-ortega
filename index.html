@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis 15 Años - Sara Sofía Ortega Ayala</title>
+  
+  <!-- Favicon y Metadatos OpenGraph -->
+  <meta name="description" content="Invitación Oficial a la celebración de los 15 Años de Sara Sofía Ortega Ayala. Cali, 20 de Diciembre de 2026.">
+  <meta property="og:title" content="Los 15 de Sara Sofía Ortega Ayala">
+  <meta property="og:description" content="Te invito a celebrar conmigo este día mágico e inolvidable. ¡Confirma tu asistencia!">
+  <meta property="og:type" content="website">
+
+  <!-- Google Fonts Elegantes para Quinceañera -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+  <!-- Estilos CSS -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/form.css">
+</head>
+<body>
+
+  <!-- Canvas animado de estrellas y partículas -->
+  <canvas id="stars-canvas"></canvas>
+
+  <!-- Botón de música de fondo (Vals) -->
+  <div class="audio-controller">
+    <button type="button" class="btn-music-toggle" id="music-toggle-btn" title="Activar/Pausar música">
+      🎵
+    </button>
+  </div>
+
+  <div class="theme-controller" style="position: fixed; top: 80px; right: 20px; z-index: 999;">
+    <button id="theme-toggle-btn" style="background: rgba(24, 6, 36, 0.85); border: 1px solid #F249E7; color: #fff; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; box-shadow: 0 0 15px rgba(242, 73, 231, 0.4); transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); backdrop-filter: blur(10px);">
+      🌙
+    </button>
+  </div>
+
+  <div class="content-wrapper">
+
+    <!-- Tarjeta de Invitación Principal -->
+    <main class="invitation-card">
+      
+      <div class="tiara-ornament">👑</div>
+      <h1 class="quinceanera-name">Sara Sofía<br>Ortega Ayala</h1>
+      <div class="invitation-subtitle">Te invita a celebrar<br>sus</div>
+      <h1 class="quinceanera-name">15 años</h1>
+
+      <p class="emotional-quote">
+        Hay momentos en la vida que son irrepetibles, pero compartirlos con las personas que más quiero los hace eternos. Quiero que seas parte de esta noche tan soñada y especial para mí.
+      </p>
+
+      <!-- Contador Regresivo -->
+      <div class="countdown-container">
+        <div class="countdown-box">
+          <span class="countdown-number" id="count-days">00</span>
+          <span class="countdown-label">Días</span>
+        </div>
+        <div class="countdown-box">
+          <span class="countdown-number" id="count-hours">00</span>
+          <span class="countdown-label">Horas</span>
+        </div>
+        <div class="countdown-box">
+          <span class="countdown-number" id="count-mins">00</span>
+          <span class="countdown-label">Min</span>
+        </div>
+        <div class="countdown-box">
+          <span class="countdown-number" id="count-secs">00</span>
+          <span class="countdown-label">Seg</span>
+        </div>
+      </div>
+
+      <!-- Tarjetas de Información: Fecha, Lugar, Calendario -->
+      <div class="details-grid">
+        <!-- Fecha y Hora -->
+        <div class="detail-card">
+          <span class="detail-icon">📅</span>
+          <h3 class="detail-title">Fecha y Hora</h3>
+          <p class="detail-text">
+            <strong>Domingo, 20 de Diciembre de 2026</strong><br>
+            Recepción a partir de las <strong>7:00 PM</strong>.
+          </p>
+          <div style="margin-top: 15px;">
+            <!-- Botón oficial de inserción de Google Calendar -->
+            <a target="_blank" href="https://calendar.google.com/calendar/event?action=TEMPLATE&amp;tmeid=MmVrbnRqNjMxZ201a3RpcGNvMnExamJ2YnEgbWFvYXphMTM1NzlAbQ&amp;tmsrc=maoaza13579%40gmail.com">
+              <img border="0" src="assets/images/google_calendar_button.gif" alt="Google Calendar" style="vertical-align: middle;">
+            </a>
+          </div>
+        </div>
+
+        <!-- Lugar y Ruta -->
+        <div class="detail-card">
+          <span class="detail-icon">📍</span>
+          <h3 class="detail-title">Lugar del Evento</h3>
+          <p class="detail-text">
+            <strong>Cra. 23 # 56-50</strong><br>
+            Comuna 8, Cali, Valle del Cauca.
+          </p>
+          <a href="https://www.google.com/maps/dir//Cra.+23+%2356-50,+Comuna+8,+Cali,+Valle+del+Cauca/@3.4417114,-76.4965274,17z/data=!4m18!1m8!3m7!1s0x8e30a70733ebf565:0xc9f09c63545da21c!2sCra.+23+%2356-50,+Comuna+8,+Cali,+Valle+del+Cauca!3b1!8m2!3d3.4415515!4d-76.4965047!16s%2Fg%2F11vjm1vyjl!4m8!1m0!1m5!1m1!1s0x8e30a70733ebf565:0xc9f09c63545da21c!2m2!1d-76.4965047!2d3.4415515!3e0?entry=ttu" 
+             target="_blank" 
+             class="detail-btn">
+            🚗 Cómo Llegar (Google Maps)
+          </a>
+        </div>
+      </div>
+
+      <!-- Banner de Dress Code con Alerta del Color Morado Reservado -->
+      <section class="dress-code-banner">
+        <h3 class="dress-code-title">
+          <span>👗</span> Código de Vestimenta: Formal / De Gala <span>✨</span>
+        </h3>
+        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 6px;">
+          Queremos que luzcas espectacular y elegante en esta noche de ensueño.
+        </p>
+        <div class="dress-code-warning">
+          ⚠️ NOTA ESPECIAL: El color <span>MORADO</span> está reservado exclusivamente para la quinceañera.
+        </div>
+      </section>
+
+      <!-- Sección Dinámica: Pase Digital VIP (Si ya está registrado con cookie) -->
+      <section id="vip-pass-section" style="display: none;"></section>
+
+      <!-- Sección de Asistencia y Vacantes (Si no está registrado) -->
+      <div id="rsvp-action-container">
+        
+        <!-- Indicador de Vacantes (Máximo 90) -->
+        <div class="vacancies-status-bar" id="vacancies-bar-container">
+          <div class="vacancy-pill">
+            <span class="vacancy-dot" id="vacancies-indicator-dot"></span>
+            <span>Vacantes disponibles: <strong id="vacancies-count">Consultando...</strong></span>
+          </div>
+        </div>
+
+        <!-- Botón para Confirmar Asistencia -->
+        <button type="button" class="btn-main-rsvp" id="btn-main-rsvp" style="display: none;">
+          ✨ Confirmar Asistencia ✨
+        </button>
+
+        <!-- Mensaje de Aforo Completo (Si no hay vacantes) -->
+        <div class="full-capacity-notice" id="full-capacity-notice" style="display: none;">
+          🔒 Aforo Completo: Se han alcanzado los 90 invitados máximos para el evento. ¡Gracias a todos por confirmar!
+        </div>
+
+        <div style="margin-top: 15px;">
+          <a href="cancel.html" style="font-size: 12px; color: var(--gold-accent); text-decoration: none;">
+            ¿Te registraste desde otro dispositivo? Gestionar o cancelar asistencia aquí →
+          </a>
+        </div>
+
+      </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <p>Celebración de los 15 Años de Sara Sofía Ortega Ayala • 20 de Diciembre de 2026 • Cali, Colombia</p>
+    </footer>
+
+  </div>
+
+  <!-- ==========================================================================
+       MODAL DE REGISTRO CON DESBLOQUEO PROGRESIVO DE CAMPOS
+       ========================================================================== -->
+  <div class="modal-overlay" id="rsvp-modal">
+    <div class="modal-content">
+      <button type="button" class="modal-close" id="modal-close-btn" title="Cerrar">&times;</button>
+      
+      <div class="modal-header">
+        <div style="font-size: 28px; margin-bottom: 5px;">💌</div>
+        <h2 class="modal-title">Confirmar Asistencia</h2>
+        <p class="modal-subtitle">Por favor diligencia tus datos para asegurar tu cupo (Máximo 90 invitados).</p>
+      </div>
+
+      <div class="form-vacancies-indicator" id="form-vacancies-text">
+        Consultando vacantes disponibles en la base de datos...
+      </div>
+
+      <form id="rsvp-registration-form" novalidate>
+        
+        <!-- PASO 1: NOMBRE COMPLETO (Solo letras y espacios) -->
+        <div class="form-step" id="step-name">
+          <label class="form-label" for="input-name">
+            <span>1. Tu Nombre Completo</span>
+            <span class="lock-badge">Solo letras y espacios</span>
+          </label>
+          <div class="input-container">
+            <input type="text" 
+                   id="input-name" 
+                   class="form-input" 
+                   placeholder="Ej: Juan Carlos Pérez" 
+                   autocomplete="name" 
+                   required>
+            <span class="field-status-icon" id="icon-name"></span>
+          </div>
+          <div class="form-feedback" id="feedback-name"></div>
+        </div>
+
+        <!-- PASO 2: NÚMERO DE DOCUMENTO (Solo números) -->
+        <div class="form-step locked" id="step-doc">
+          <label class="form-label" for="input-doc">
+            <span>2. Número de Documento (C.C. / T.I.)</span>
+            <span class="lock-badge" id="lock-badge-doc">🔒 Desbloquear completando el nombre</span>
+          </label>
+          <div class="input-container">
+            <input type="text" 
+                   inputmode="numeric" 
+                   id="input-doc" 
+                   class="form-input" 
+                   placeholder="Ej: 1144000123" 
+                   disabled 
+                   required>
+            <span class="field-status-icon" id="icon-doc"></span>
+          </div>
+          <div class="form-feedback" id="feedback-doc"></div>
+        </div>
+
+        <!-- Banner inteligente si es un Líder que ya estuvo registrado antes -->
+        <div class="former-group-banner" id="former-group-banner">
+          <div class="former-group-title">✨ ¡Bienvenido de nuevo!</div>
+          <div class="former-group-text" id="former-group-text"></div>
+          <button type="button" class="btn-restore-group" id="btn-restore-group">Re-inscribir acompañantes</button>
+        </div>
+
+        <!-- PASO 3: CORREO ELECTRÓNICO (Validación personal vs corporativo) -->
+        <div class="form-step locked" id="step-email">
+          <label class="form-label" for="input-email">
+            <span>3. Correo Electrónico Personal</span>
+            <span class="lock-badge" id="lock-badge-email">🔒 Desbloquear completando documento</span>
+          </label>
+          <div class="input-container">
+            <input type="email" 
+                   id="input-email" 
+                   class="form-input" 
+                   placeholder="tu-correo@gmail.com" 
+                   autocomplete="email" 
+                   disabled 
+                   required>
+            <span class="field-status-icon" id="icon-email"></span>
+          </div>
+          <div class="form-feedback" id="feedback-email"></div>
+        </div>
+
+        <!-- PASO 4: SECCIÓN DE ACOMPAÑANTES -->
+        <div class="companions-section" id="companions-section">
+          <div class="companions-header">
+            <span class="companions-title">👥 ¿Asistirás con acompañantes?</span>
+          </div>
+          
+          <div id="companions-list"></div>
+
+          <button type="button" class="btn-add-companion" id="btn-add-companion">
+            <span>+</span> Agregar Acompañante
+          </button>
+        </div>
+
+        <!-- Botón de Envío -->
+        <button type="submit" class="btn-submit-registration" id="btn-submit-registration" disabled>
+          Confirmar mi Asistencia 🎉
+        </button>
+
+        <p class="calendar-consent-note">
+          Al confirmar, tu puesto quedará reservado, se te asignará un código QR único y se abrirá el evento en Google Calendar para agregarlo a tu agenda.
+        </p>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- Contenedor global de Toasts -->
+  <div class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="assets/vendor/qrcode.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/db-service.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

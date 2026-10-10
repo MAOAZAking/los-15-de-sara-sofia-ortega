@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión y Cancelación de Asistencia - Los 15 de Sara Sofía</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/form.css">
+  <style>
+    .cancel-card {
+      max-width: 620px;
+      margin: 40px auto;
+      background: var(--bg-card);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 40px 30px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+    }
+    .cancel-title {
+      font-family: var(--font-serif);
+      font-size: 24px;
+      color: var(--primary-light);
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .cancel-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: 25px;
+      line-height: 1.5;
+    }
+    .guest-summary-box {
+      background: rgba(45, 10, 66, 0.5);
+      border: 1px solid var(--primary-color);
+      border-radius: 16px;
+      padding: 18px 20px;
+      margin-bottom: 25px;
+      text-align: center;
+    }
+    .security-confirm-box {
+      background: rgba(220, 53, 69, 0.12);
+      border: 1.5px solid #dc3545;
+      border-radius: 16px;
+      padding: 20px;
+      margin: 25px 0;
+    }
+    .security-phrase-highlight {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 16px;
+      font-weight: 700;
+      color: #ff8595;
+      display: inline-block;
+      margin: 6px 0;
+      user-select: all;
+    }
+    .btn-danger-confirm {
+      background: #dc3545;
+      color: #fff;
+      border: none;
+      width: 100%;
+      padding: 16px;
+      border-radius: 30px;
+      font-size: 16px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+      transition: all 0.3s;
+    }
+    .btn-danger-confirm:disabled {
+      background: #555;
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .btn-danger-confirm.phrase-valid {
+      background: linear-gradient(135deg, #e63946 0%, #d62828 100%);
+      box-shadow: 0 0 20px rgba(230, 57, 70, 0.6);
+    }
+    .checklist-item {
+      background: rgba(20, 4, 30, 0.6);
+      border: 1px solid rgba(242, 73, 231, 0.2);
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="content-wrapper">
+
+    <div class="cancel-card">
+      <div style="text-align: center; font-size: 36px; margin-bottom: 10px;">👑</div>
+      <h1 class="cancel-title">Gestión y Cancelación de Asistencia</h1>
+      <p class="cancel-desc">Los 15 de Sara Sofía Ortega Ayala • 20 de Diciembre de 2026</p>
+
+      <!-- SECCIÓN 1: BÚSQUEDA POR DOCUMENTO (Si entra sin código/token) -->
+      <div id="search-doc-section" style="display: none;">
+        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 15px;">
+          Ingresa tu número de documento para localizar tu confirmación de asistencia activa:
+        </p>
+        <form id="form-request-doc">
+          <div style="margin-bottom: 20px;">
+            <input type="text" 
+                   inputmode="numeric" 
+                   id="input-search-doc" 
+                   class="form-input" 
+                   placeholder="Número de Documento (Solo dígitos)" 
+                   required>
+          </div>
+          <button type="submit" class="btn-main-rsvp" id="btn-send-cancel-link" style="width: 100%;">
+            Buscar y Gestionar Asistencia
+          </button>
+        </form>
+      </div>
+
+      <!-- SECCIÓN 2: FLUJO DE CANCELACIÓN DEL INVITADO O GRUPO -->
+      <div id="cancel-flow-section" style="display: none;">
+        
+        <div class="guest-summary-box">
+          <div style="font-size: 12px; color: var(--gold-light); text-transform: uppercase; letter-spacing: 2px;">Invitado Registrado</div>
+          <h2 style="font-family: var(--font-serif); font-size: 24px; color: #fff; margin: 6px 0;" id="cancel-guest-name">Cargando...</h2>
+          <div style="color: var(--primary-light); font-weight: bold; font-size: 14px;" id="cancel-slot-badge">Puesto #</div>
+        </div>
+
+        <!-- Opciones exclusivas si es LÍDER DE GRUPO -->
+        <div id="leader-group-options" style="display: none; margin-bottom: 20px;">
+          <h3 style="font-size: 15px; color: var(--gold-light); margin-bottom: 12px;">¿Cómo deseas proceder con tu grupo?</h3>
+          
+          <label style="display: block; margin-bottom: 10px; cursor: pointer;">
+            <input type="radio" name="cancel-scope" id="radio-only-me" value="only-me">
+            <span style="margin-left: 8px;">Cancelar únicamente mi asistencia personal</span>
+          </label>
+
+          <label style="display: block; margin-bottom: 15px; cursor: pointer;">
+            <input type="radio" name="cancel-scope" id="radio-all-group" value="all-group" checked>
+            <span style="margin-left: 8px;">Cancelar asistencia de acompañantes / todo el grupo</span>
+          </label>
+
+          <!-- Checklist de acompañantes (todos seleccionados por defecto) -->
+          <div id="companions-checklist-container" style="background: rgba(30, 8, 44, 0.7); border-radius: 12px; padding: 15px; margin-top: 10px;">
+            <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;">
+              Selecciona quiénes del grupo serán cancelados (todos marcados por defecto):
+            </div>
+            <div id="companions-checklist"></div>
+          </div>
+        </div>
+
+        <!-- Aviso si es un ACOMPAÑANTE (No es líder) -->
+        <div id="companion-warning-box" class="form-feedback feedback-info active" style="display: none; margin-bottom: 20px; font-size: 13px; line-height: 1.5;"></div>
+
+        <!-- Cuadro de Confirmación de Seguridad Estricta -->
+        <div class="security-confirm-box">
+          <div style="font-weight: 700; color: #ff8595; font-size: 14px; margin-bottom: 6px;">
+            🔒 Verificación de Seguridad Anti-Errores
+          </div>
+          <p style="font-size: 13px; color: #ddd; margin-bottom: 10px;">
+            Para habilitar el botón y confirmar la liberación del puesto en la base de datos de GitHub, escribe exactamente el siguiente texto:
+          </p>
+          <div style="text-align: center;">
+            <span class="security-phrase-highlight">CANCELAR asistencia</span>
+          </div>
+          <div style="margin-top: 12px;">
+            <input type="text" 
+                   id="input-security-phrase" 
+                   class="form-input" 
+                   placeholder="Escribe: CANCELAR asistencia" 
+                   autocomplete="off" 
+                   style="border-color: #dc3545; text-align: center; font-weight: 600;">
+            <div id="phrase-match-status" style="margin-top: 6px; text-align: center;"></div>
+          </div>
+        </div>
+
+        <!-- Botón de Confirmación -->
+        <button type="button" class="btn-danger-confirm" id="btn-confirm-cancel" disabled>
+          Cancelar Asistencia
+        </button>
+
+      </div>
+
+      <!-- SECCIÓN 3: PANTALLA DE ÉXITO -->
+      <div id="cancel-success-box" style="display: none; text-align: center; padding: 20px 0;">
+        <div style="font-size: 50px; margin-bottom: 15px;">🕊️</div>
+        <h2 style="font-family: var(--font-serif); color: #2ecc71; font-size: 26px; margin-bottom: 10px;">Asistencia Cancelada</h2>
+        <p style="font-size: 15px; color: var(--text-muted); line-height: 1.6; margin-bottom: 20px;" id="released-count-text">
+          Tu cupo ha sido liberado exitosamente y los datos fueron actualizados en la base de datos de GitHub.
+        </p>
+        <p style="font-size: 13px; color: #aaa; margin-bottom: 25px;">
+          Lamentamos mucho que no puedas acompañar a Sara Sofía. ¡Gracias por avisarnos para permitir que otro invitado asista!
+        </p>
+        <a href="index.html" class="btn-main-rsvp" style="text-decoration: none;">
+          Volver a la Invitación Principal
+        </a>
+      </div>
+
+      <div style="text-align: center; margin-top: 25px;">
+        <a href="index.html" style="font-size: 13px; color: var(--text-muted); text-decoration: none;">
+          ← Volver a la tarjeta de invitación
+        </a>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/db-service.js"></script>
+  <script src="js/cancel.js"></script>
+</body>
+</html>

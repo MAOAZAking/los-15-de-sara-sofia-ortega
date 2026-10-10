@@ -1,0 +1,376 @@
+{
+  "event_info": {
+    "title": "Los 15 de Sara Sofía Ortega Ayala",
+    "quinceanera": "Sara Sofía Ortega Ayala",
+    "date": "2026-12-20",
+    "time": "19:00:00",
+    "venue": "Cra. 23 # 56-50, Comuna 8, Cali, Valle del Cauca",
+    "max_capacity": 90,
+    "primary_color": "rgb(242, 73, 231)",
+    "reserved_color": "Morado"
+  },
+  "slots": [
+    {
+      "slot": 1,
+      "guest": null
+    },
+    {
+      "slot": 2,
+      "guest": null
+    },
+    {
+      "slot": 3,
+      "guest": null
+    },
+    {
+      "slot": 4,
+      "guest": null
+    },
+    {
+      "slot": 5,
+      "guest": null
+    },
+    {
+      "slot": 6,
+      "guest": null
+    },
+    {
+      "slot": 7,
+      "guest": null
+    },
+    {
+      "slot": 8,
+      "guest": null
+    },
+    {
+      "slot": 9,
+      "guest": null
+    },
+    {
+      "slot": 10,
+      "guest": null
+    },
+    {
+      "slot": 11,
+      "guest": null
+    },
+    {
+      "slot": 12,
+      "guest": null
+    },
+    {
+      "slot": 13,
+      "guest": null
+    },
+    {
+      "slot": 14,
+      "guest": null
+    },
+    {
+      "slot": 15,
+      "guest": null
+    },
+    {
+      "slot": 16,
+      "guest": null
+    },
+    {
+      "slot": 17,
+      "guest": null
+    },
+    {
+      "slot": 18,
+      "guest": null
+    },
+    {
+      "slot": 19,
+      "guest": null
+    },
+    {
+      "slot": 20,
+      "guest": null
+    },
+    {
+      "slot": 21,
+      "guest": null
+    },
+    {
+      "slot": 22,
+      "guest": null
+    },
+    {
+      "slot": 23,
+      "guest": null
+    },
+    {
+      "slot": 24,
+      "guest": null
+    },
+    {
+      "slot": 25,
+      "guest": null
+    },
+    {
+      "slot": 26,
+      "guest": null
+    },
+    {
+      "slot": 27,
+      "guest": null
+    },
+    {
+      "slot": 28,
+      "guest": null
+    },
+    {
+      "slot": 29,
+      "guest": null
+    },
+    {
+      "slot": 30,
+      "guest": null
+    },
+    {
+      "slot": 31,
+      "guest": null
+    },
+    {
+      "slot": 32,
+      "guest": null
+    },
+    {
+      "slot": 33,
+      "guest": null
+    },
+    {
+      "slot": 34,
+      "guest": null
+    },
+    {
+      "slot": 35,
+      "guest": null
+    },
+    {
+      "slot": 36,
+      "guest": null
+    },
+    {
+      "slot": 37,
+      "guest": null
+    },
+    {
+      "slot": 38,
+      "guest": null
+    },
+    {
+      "slot": 39,
+      "guest": null
+    },
+    {
+      "slot": 40,
+      "guest": null
+    },
+    {
+      "slot": 41,
+      "guest": null
+    },
+    {
+      "slot": 42,
+      "guest": null
+    },
+    {
+      "slot": 43,
+      "guest": null
+    },
+    {
+      "slot": 44,
+      "guest": null
+    },
+    {
+      "slot": 45,
+      "guest": null
+    },
+    {
+      "slot": 46,
+      "guest": null
+    },
+    {
+      "slot": 47,
+      "guest": null
+    },
+    {
+      "slot": 48,
+      "guest": null
+    },
+    {
+      "slot": 49,
+      "guest": null
+    },
+    {
+      "slot": 50,
+      "guest": null
+    },
+    {
+      "slot": 51,
+      "guest": null
+    },
+    {
+      "slot": 52,
+      "guest": null
+    },
+    {
+      "slot": 53,
+      "guest": null
+    },
+    {
+      "slot": 54,
+      "guest": null
+    },
+    {
+      "slot": 55,
+      "guest": null
+    },
+    {
+      "slot": 56,
+      "guest": null
+    },
+    {
+      "slot": 57,
+      "guest": null
+    },
+    {
+      "slot": 58,
+      "guest": null
+    },
+    {
+      "slot": 59,
+      "guest": null
+    },
+    {
+      "slot": 60,
+      "guest": null
+    },
+    {
+      "slot": 61,
+      "guest": null
+    },
+    {
+      "slot": 62,
+      "guest": null
+    },
+    {
+      "slot": 63,
+      "guest": null
+    },
+    {
+      "slot": 64,
+      "guest": null
+    },
+    {
+      "slot": 65,
+      "guest": null
+    },
+    {
+      "slot": 66,
+      "guest": null
+    },
+    {
+      "slot": 67,
+      "guest": null
+    },
+    {
+      "slot": 68,
+      "guest": null
+    },
+    {
+      "slot": 69,
+      "guest": null
+    },
+    {
+      "slot": 70,
+      "guest": null
+    },
+    {
+      "slot": 71,
+      "guest": null
+    },
+    {
+      "slot": 72,
+      "guest": null
+    },
+    {
+      "slot": 73,
+      "guest": null
+    },
+    {
+      "slot": 74,
+      "guest": null
+    },
+    {
+      "slot": 75,
+      "guest": null
+    },
+    {
+      "slot": 76,
+      "guest": null
+    },
+    {
+      "slot": 77,
+      "guest": null
+    },
+    {
+      "slot": 78,
+      "guest": null
+    },
+    {
+      "slot": 79,
+      "guest": null
+    },
+    {
+      "slot": 80,
+      "guest": null
+    },
+    {
+      "slot": 81,
+      "guest": null
+    },
+    {
+      "slot": 82,
+      "guest": null
+    },
+    {
+      "slot": 83,
+      "guest": null
+    },
+    {
+      "slot": 84,
+      "guest": null
+    },
+    {
+      "slot": 85,
+      "guest": null
+    },
+    {
+      "slot": 86,
+      "guest": null
+    },
+    {
+      "slot": 87,
+      "guest": null
+    },
+    {
+      "slot": 88,
+      "guest": null
+    },
+    {
+      "slot": 89,
+      "guest": null
+    },
+    {
+      "slot": 90,
+      "guest": null
+    }
+  ],
+  "temporary_locks": [],
+  "all_time_guests": []
+}

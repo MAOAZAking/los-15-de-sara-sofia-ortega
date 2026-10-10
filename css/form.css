@@ -1,0 +1,426 @@
+/* ==========================================================================
+   FORMULARIO DE REGISTRO Y PASOS PROGRESIVOS (FORM.CSS)
+   Desbloqueo gradual de campos, validaciones y acompañantes
+   ========================================================================== */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(10, 2, 16, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-content {
+  background: #180424;
+  border: 1px solid var(--primary-color);
+  border-radius: 24px;
+  width: 100%;
+  max-width: 580px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 35px 30px;
+  position: relative;
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(242, 73, 231, 0.3);
+  transform: translateY(20px);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.modal-overlay.active .modal-content {
+  transform: translateY(0);
+}
+
+.modal-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+  background: var(--primary-color);
+  transform: rotate(90deg);
+}
+
+.modal-header {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.modal-title {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  color: var(--primary-light);
+  margin-bottom: 6px;
+}
+
+.modal-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* Indicador de vacantes en el formulario */
+.form-vacancies-indicator {
+  background: rgba(242, 73, 231, 0.1);
+  border: 1px dashed var(--primary-color);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 13px;
+  text-align: center;
+  margin-bottom: 20px;
+  color: var(--gold-light);
+}
+
+/* Campos progresivos */
+.form-step {
+  margin-bottom: 20px;
+  position: relative;
+  transition: opacity 0.3s ease;
+}
+
+.form-step.locked {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.form-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gold-light);
+  margin-bottom: 8px;
+}
+
+.lock-badge {
+  font-size: 11px;
+  color: #999;
+  font-weight: normal;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.input-container {
+  position: relative;
+}
+
+.form-input {
+  width: 100%;
+  background: rgba(36, 8, 51, 0.7);
+  border: 1.5px solid rgba(242, 73, 231, 0.3);
+  border-radius: 14px;
+  padding: 14px 45px 14px 16px;
+  color: #ffffff;
+  font-size: 15px;
+  font-family: var(--font-sans);
+  transition: all 0.25s ease;
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 15px var(--primary-glow);
+  background: rgba(45, 10, 66, 0.9);
+}
+
+.form-input.valid {
+  border-color: #28a745;
+  box-shadow: 0 0 10px rgba(40, 167, 69, 0.3);
+}
+
+.form-input.invalid {
+  border-color: #dc3545;
+}
+
+.field-status-icon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  pointer-events: none;
+}
+
+/* Mensajes de advertencia y ayuda */
+.form-feedback {
+  font-size: 12px;
+  margin-top: 6px;
+  display: none;
+  line-height: 1.4;
+}
+
+.form-feedback.active {
+  display: block;
+}
+
+.feedback-warning {
+  color: #ffc107;
+  background: rgba(255, 193, 7, 0.1);
+  padding: 6px 12px;
+  border-radius: 8px;
+  border-left: 3px solid #ffc107;
+}
+
+.feedback-error {
+  color: #ff8595;
+  background: rgba(220, 53, 69, 0.1);
+  padding: 6px 12px;
+  border-radius: 8px;
+  border-left: 3px solid #dc3545;
+}
+
+.feedback-info {
+  color: #8ed6ff;
+  background: rgba(0, 123, 255, 0.1);
+  padding: 6px 12px;
+  border-radius: 8px;
+  border-left: 3px solid #007bff;
+}
+
+/* Banner de Líder anterior regresando */
+.former-group-banner {
+  background: linear-gradient(135deg, rgba(82, 10, 84, 0.9), rgba(30, 4, 38, 0.95));
+  border: 1.5px solid var(--gold-accent);
+  border-radius: 16px;
+  padding: 16px;
+  margin: 15px 0 20px 0;
+  display: none;
+  animation: slide-in 0.3s ease;
+}
+
+.former-group-banner.active {
+  display: block;
+}
+
+.former-group-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gold-light);
+  margin-bottom: 6px;
+}
+
+.former-group-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.btn-restore-group {
+  background: var(--gold-accent);
+  color: #1f0b2b;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-restore-group:hover {
+  background: var(--gold-light);
+  transform: translateY(-1px);
+}
+
+/* Sección de Acompañantes */
+.companions-section {
+  margin: 25px 0;
+  border-top: 1px dashed rgba(242, 73, 231, 0.3);
+  padding-top: 20px;
+  display: none;
+}
+
+.companions-section.active {
+  display: block;
+}
+
+.companions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.companions-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--primary-light);
+}
+
+.companion-card {
+  background: rgba(45, 10, 66, 0.4);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 15px;
+  position: relative;
+  animation: slide-in 0.3s ease;
+}
+
+.companion-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.companion-badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gold-accent);
+  background: rgba(229, 195, 120, 0.15);
+  padding: 4px 12px;
+  border-radius: 12px;
+}
+
+.btn-remove-companion {
+  background: transparent;
+  border: none;
+  color: #ff8595;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.btn-remove-companion:hover {
+  background: rgba(220, 53, 69, 0.2);
+}
+
+.companion-field {
+  margin-bottom: 12px;
+}
+
+.companion-input {
+  width: 100%;
+  background: rgba(20, 4, 30, 0.6);
+  border: 1px solid rgba(242, 73, 231, 0.25);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+}
+
+.companion-input:focus {
+  border-color: var(--primary-color);
+}
+
+/* Botón para agregar acompañante */
+.btn-add-companion {
+  background: rgba(242, 73, 231, 0.1);
+  border: 1.5px dashed var(--primary-color);
+  color: var(--primary-light);
+  width: 100%;
+  padding: 12px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  margin-top: 10px;
+}
+
+.btn-add-companion:hover {
+  background: rgba(242, 73, 231, 0.2);
+  transform: translateY(-1px);
+}
+
+.btn-add-companion:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: #555;
+  color: #777;
+}
+
+/* Botón final de envío */
+.btn-submit-registration {
+  background: linear-gradient(135deg, #f249e7 0%, #b515ab 100%);
+  color: #ffffff;
+  border: none;
+  width: 100%;
+  padding: 16px;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 8px 25px var(--primary-glow);
+  transition: all 0.3s ease;
+  margin-top: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn-submit-registration:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px rgba(242, 73, 231, 0.6);
+}
+
+.btn-submit-registration:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.calendar-consent-note {
+  font-size: 11px;
+  color: #aaa;
+  text-align: center;
+  margin-top: 14px;
+  line-height: 1.5;
+}
+
+/* Spinner de carga */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

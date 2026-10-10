@@ -1,0 +1,97 @@
+/* ==========================================================================
+   LOS 15 DE SARA SOFÍA - MODO PREMIUM LIGHT
+   ========================================================================== */
+:root {
+  --primary-rgb: 242, 73, 231;
+  --primary-color: #f249e7;
+  --primary-light: #ff7df7;
+  --primary-dark: #b515ab;
+  --primary-glow: rgba(242, 73, 231, 0.3);
+  --gold-accent: #d4af37;
+  --gold-light: #f3e5ab;
+  --rose-gold: #b76e79;
+  
+  --bg-deep: #fbf9f6; /* Blanco Marfil */
+  --bg-card: rgba(255, 255, 255, 0.65);
+  --bg-card-light: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(242, 73, 231, 0.4);
+  --glass-glow: 0 10px 40px 0 rgba(242, 73, 231, 0.15);
+  
+  --text-main: #2a1b2e;
+  --text-muted: #5e4b63;
+  --text-dark: #000000;
+  --text-light: #ffffff;
+}
+
+body {
+  background-color: var(--bg-deep);
+  color: var(--text-main);
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(242, 73, 231, 0.08) 0%, transparent 60%),
+    linear-gradient(180deg, #fdfbf7 0%, #f4eff5 100%);
+}
+
+.invitation-card, .detail-card, .vip-pass-card, .gift-card, .countdown-box {
+  background: var(--bg-card);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-glow), 0 4px 15px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  color: var(--text-main);
+}
+
+.detail-card:hover, .vip-pass-card:hover, .gift-card:hover, .countdown-box:hover {
+  background: rgba(242, 73, 231, 0.215);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  transform: translateY(-4px);
+  border-color: var(--primary-color);
+  box-shadow: 0 10px 25px rgba(242, 73, 231, 0.15);
+  color: var(--text-light);
+}
+
+.quinceanera-name {
+  color: var(--primary-dark);
+  text-shadow: 0 0 10px rgba(242, 73, 231, 0.4);
+}
+
+.emotional-quote {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.countdown-number {
+  color: var(--primary-dark);
+  text-shadow: 0 0 8px rgba(242, 73, 231, 0.3);
+}
+
+.detail-title, .gift-title {
+  color: var(--rose-gold);
+  font-weight: 700;
+}
+
+.dress-code-banner {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(242, 73, 231, 0.1) 100%);
+  border: 2px solid var(--primary-color);
+}
+
+.dress-code-title {
+  color: var(--primary-dark);
+}
+
+.dress-code-warning {
+  color: var(--text-main);
+  background: rgba(242, 73, 231, 0.15);
+  border-color: var(--primary-color);
+}
+
+.dress-code-warning span {
+  color: var(--primary-dark);
+  font-weight: 800;
+}
+
+.btn-music-toggle {
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--primary-dark);
+}

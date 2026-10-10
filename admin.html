@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <script>
+    /* 1_ARQUITECTURA_DE_SEGURIDAD_OBSCURA: Criptografía SHA-256 y Borrado de Rastro URL */
+    (async function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('token') || '';
+      const encoder = new TextEncoder();
+      const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(token));
+      const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+      
+      const validHash = '0b92e41c578a1b4100a3b74aefb5d96d857d79814853fc0cad9b3268784870a9';
+      
+      if (hashHex !== validHash) {
+        // Ejecución de autodestrucción visual
+        document.documentElement.innerHTML = '<body style="background:#000;color:#0f0;display:flex;justify-content:center;align-items:center;height:100vh;font-family:monospace;margin:0;"><h1>ACCESO DENEGADO - ANOMALÍA DETECTADA</h1></body>';
+        window.stop();
+      } else {
+        // Destrucción de Evidencia: Reescribe la URL limpia en el navegador y en el historial 
+        // para evitar autocompletado futuro, manteniendo la sesión activa sin recargar.
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    })();
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard & Escáner QR - Los 15 de Sara Sofía</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="admin-body">
+
+  <!-- ==========================================================================
+       MODAL DE AUTENTICACIÓN DEL ADMINISTRADOR
+       ========================================================================== -->
+  <div class="login-modal-overlay" id="admin-login-overlay">
+    <div class="login-card">
+      <div class="login-icon">🔐</div>
+      <h2 class="login-title">Control de Acceso</h2>
+      <p class="login-desc">Panel de Recepción y Control - Los 15 de Sara Sofía</p>
+      
+      <form id="admin-login-form">
+        <input type="text" id="admin-user" class="login-input" placeholder="Usuario" required>
+        <input type="password" id="admin-pass" class="login-input" placeholder="Contraseña" required autofocus>
+        <button type="submit" class="btn-login-submit">Ingresar al Dashboard</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       OVERLAY DE CELEBRACIÓN DE 3 SEGUNDOS ("¡BIENVENID@ A LA FIESTA!")
+       ========================================================================== -->
+  <div class="celebration-overlay" id="celebration-overlay">
+    <div class="celebration-box">
+      <div class="celebration-sparkle">✨ 🎉 👑</div>
+      <div class="celebration-title">¡Bienvenid@ a la fiesta!</div>
+      <div class="celebration-guest-name" id="celebration-guest-name">Nombre Invitado</div>
+      <div class="celebration-slot-info" id="celebration-slot-info">Puesto Asignado: #</div>
+      
+      <div class="celebration-timer-bar">
+        <div class="celebration-timer-progress"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       CONTENIDO PRINCIPAL DEL DASHBOARD
+       ========================================================================== -->
+  <header class="admin-header">
+    <div class="admin-brand">
+      <span style="font-size: 28px;">👑</span>
+      <div>
+        <h1 class="admin-title">Panel de Control & Recepción</h1>
+        <div class="admin-subtitle">Los 15 de Sara Sofía Ortega Ayala • 20 de Diciembre de 2026</div>
+      </div>
+    </div>
+
+    <nav class="admin-nav">
+      <a href="#tab-slots" class="btn-admin-nav active" data-tab="tab-slots">📋 Puestos (90)</a>
+      <a href="#tab-scanner" class="btn-admin-nav" data-tab="tab-scanner">📷 Escáner QR</a>
+      <a href="#tab-history" class="btn-admin-nav" data-tab="tab-history">📜 Histórico Total</a>
+      <a href="index.html" class="btn-admin-nav" target="_blank">🌐 Ver Web</a>
+    </nav>
+  </header>
+
+  <main class="admin-container">
+
+    <!-- Tarjetas de Métricas -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-header">
+          <span>Cupos Ocupados</span>
+          <span>👥</span>
+        </div>
+        <div class="stat-value primary" id="stat-occupied">0 / 90</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <span>Cupos Disponibles</span>
+          <span>🎟️</span>
+        </div>
+        <div class="stat-value gold" id="stat-free">90</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <span>Ingresados a la Fiesta</span>
+          <span>✅</span>
+        </div>
+        <div class="stat-value success" id="stat-entered">0</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <span>Histórico Total Registros</span>
+          <span>📁</span>
+        </div>
+        <div class="stat-value" id="stat-historical">0</div>
+      </div>
+    </div>
+
+    <!-- PESTAÑA 1: GESTIÓN DE PUESTOS (90) -->
+    <div class="tab-pane active" id="tab-slots">
+      
+      <div class="search-filter-bar">
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="admin-search-input" class="search-input" placeholder="Buscar por nombre, documento o código de pase...">
+        </div>
+
+        <div class="filter-pills">
+          <button type="button" class="filter-btn active" data-filter="all">Todos (90)</button>
+          <button type="button" class="filter-btn" data-filter="occupied">Ocupados</button>
+          <button type="button" class="filter-btn" data-filter="free">Libres</button>
+          <button type="button" class="filter-btn" data-filter="entered">Ingresados</button>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Puesto</th>
+              <th>Estado</th>
+              <th>Invitado</th>
+              <th>Documento</th>
+              <th>Correo</th>
+              <th>Tipo</th>
+              <th>Código Pase</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="slots-table-body">
+            <tr>
+              <td colspan="8" style="text-align: center; padding: 30px; color: #888;">Cargando puestos...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- PESTAÑA 2: ESCÁNER QR EN VIVO (CÁMARA CON AUTODETECCIÓN CONTINUA) -->
+    <div class="tab-pane" id="tab-scanner">
+      
+      <div class="qr-scanner-container">
+        <h2 style="font-family: var(--font-serif); font-size: 22px; color: var(--gold-light); margin-bottom: 6px;">
+          📷 Escaneo Continuo en Puerta
+        </h2>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
+          Apunta la cámara al código QR del pase del invitado. Se detectará y registrará automáticamente sin presionar ningún botón.
+        </p>
+
+        <div class="scanner-viewport-box">
+          <div id="reader"></div>
+          <div class="scanner-laser" id="scanner-laser" style="display: none;"></div>
+        </div>
+
+        <div class="scanner-status-text" id="scanner-status-text">
+          Cámara en espera. Haz clic en "Iniciar Cámara" para comenzar.
+        </div>
+
+        <div class="scanner-controls">
+          <button type="button" class="btn-main-rsvp" id="btn-toggle-scanner" style="padding: 12px 26px; font-size: 14px; margin-top: 0;">
+            Iniciar Cámara
+          </button>
+          <button type="button" class="btn-flip-camera" id="btn-flip-camera">
+            🔄 Cambiar Cámara
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PESTAÑA 3: HISTORIAL COMPLETO -->
+    <div class="tab-pane" id="tab-history">
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+        <h3 style="font-family: var(--font-serif); font-size: 20px; color: var(--gold-light);">
+          Historial de Todos los Registros
+        </h3>
+        <button type="button" class="btn-main-rsvp" id="btn-export-csv" style="padding: 10px 20px; font-size: 13px; margin: 0;">
+          📥 Exportar a Excel / CSV
+        </button>
+      </div>
+
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Nombre</th>
+              <th>Documento</th>
+              <th>Correo</th>
+              <th>Código</th>
+              <th>Estado</th>
+              <th>Fecha de Registro</th>
+            </tr>
+          </thead>
+          <tbody id="history-table-body">
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 25px; color: #888;">Cargando historial...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+  </main>
+
+  <div class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="assets/vendor/html5-qrcode.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/db-service.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
