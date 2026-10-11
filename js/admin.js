@@ -208,26 +208,30 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       if (!guest) {
         statusBadge = `<span class="status-tag free">Libre</span>`;
-        actions = `<span style="color: #666; font-size: 11px;">Disponible</span>`;
+        actions = `<span style="color:#666; font-size:11px;">Disponible</span>`;
       } else if (guest.checked_in) {
-        statusBadge = `<span class="status-tag entered">✓ Ingresó (${new Date(guest.checked_in_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})})</span>`;
-        actions = `<span style="color: #2ecc71; font-weight: bold; font-size: 11px;">Pase Utilizado</span>`;
+        statusBadge = `<span class="status-tag entered">✓ Ingresó</span>`;
+        actions = `<span style="color:#2ecc71; font-size:11px;">Pase Utilizado</span>`;
       } else {
         statusBadge = `<span class="status-tag occupied">Confirmado</span>`;
-        actions = `<button class="btn-manual-checkin" data-code="${guest.code}">Marcar Ingreso</button>`;
+        actions = `
+          <div style="display: flex; gap: 6px;">
+            <button class="btn-manual-checkin" data-code="${guest.code}">Ingresar</button>
+            <button class="btn-admin-cancel-slot" data-code="${guest.code}" style="background: rgba(220,53,69,0.1); border: 1px solid #dc3545; color: #ff8595; padding: 6px 10px; border-radius: 12px; font-size: 11px; cursor: pointer; transition: all 0.2s;">Purga</button>
+          </div>
+        `;
       }
 
       tr.innerHTML = `
         <td><span class="slot-badge">#${s.slot}</span></td>
         <td>${statusBadge}</td>
-        <td><strong>${guest ? guest.name : "-"}</strong></td>
+        <td style="font-weight: 600; color: #fff;">${guest ? guest.name : "-"}</td>
         <td>${guest ? guest.document : "-"}</td>
-        <td><span style="font-size: 12px; color: #aaa;">${guest ? guest.email : "-"}</span></td>
-        <td>${guest ? (guest.is_leader ? '<span style="color: var(--gold-light); font-weight: bold;">👑 Líder</span>' : 'Acompañante') : "-"}</td>
-        <td>${guest ? `<code>${guest.code}</code>` : "-"}</td>
+        <td>${guest ? guest.email : "-"}</td>
+        <td>${guest ? (guest.is_leader ? '<span style="color:var(--gold-accent);">👑 Líder</span>' : '👥 Acompañante') : "-"}</td>
+        <td style="font-family: monospace; color: var(--primary-light);">${guest ? `${guest.code}` : "-"}</td>
         <td>${actions}</td>
       `;
-
       slotsTableBody.appendChild(tr);
     });
 
@@ -236,8 +240,29 @@ document.addEventListener("DOMContentLoaded", async () => {
       btn.addEventListener("click", async () => {
         const code = btn.getAttribute("data-code");
         btn.setAttribute("disabled", "true");
-        btn.innerHTML = `<span class="spinner"></span>`;
+        btn.innerHTML = `...`;
         await executeCheckIn(code);
+      });
+    });
+
+    // Asignar listeners a botones de purga/cancelación manual desde el dashboard
+    slotsTableBody.querySelectorAll(".btn-admin-cancel-slot").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const code = btn.getAttribute("data-code");
+        if (confirm("⚠️ ADMINISTRADOR: ¿Estás seguro de liberar este cupo? Se eliminará de GitHub y dejará el espacio libre.")) {
+          btn.setAttribute("disabled", "true");
+          btn.innerHTML = `...`;
+          try {
+            // Se fuerza la cancelación a nivel de base de datos directamente
+            await dbService.cancelAttendance(code, { cancelAllGroup: false, specificCodes: null });
+            showToast("Cupo liberado exitosamente del servidor.", "success");
+            await loadAdminData(); // Recargar tabla
+          } catch (e) {
+            showToast("Error al liberar el cupo.", "error");
+            btn.removeAttribute("disabled");
+            btn.innerHTML = `Purga`;
+          }
+        }
       });
     });
   }

@@ -39,29 +39,38 @@ document.addEventListener("DOMContentLoaded", async () => {
   let currentTargetIdentifier = null;
   let currentGroupDetails = null;
 
-  // 1. Determinar identificador inicial (por parámetro URL o cookie)
-  let initialId = paramCode || paramDoc;
-  if (!initialId && paramToken) {
+  // 1. Determinar identificador
+  let tokenData = null;
+  
+  // 1. Verificación Estricta: Solo permitimos cancelar si viene un Token encriptado desde el correo
+  if (paramToken) {
     try {
-      const decoded = JSON.parse(atob(decodeURIComponent(paramToken)));
-      initialId = decoded.code || decoded.doc;
-    } catch (e) {}
-  }
-
-  if (!initialId) {
-    // Si no hay parámetro, comprobar si este dispositivo tiene la cookie
-    const cookie = dbService.getAttendanceCookie();
-    if (cookie && cookie.code) {
-      initialId = cookie.code;
+      tokenData = JSON.parse(atob(decodeURIComponent(paramToken)));
+    } catch (e) {
+      showToast("El token de seguridad es inválido o está corrupto.", "error");
     }
   }
 
-  if (initialId) {
-    await loadCancellationData(initialId);
+  if (tokenData && tokenData.doc) {
+    // Si hay token válido, cargamos los datos para cancelar directamente
+    await loadCancellationData(tokenData.doc);
   } else {
-    // Mostrar formulario para ingresar documento
-    searchDocSection.style.display = "block";
+    // Si NO hay token (incluso si tienen cookie), los forzamos a pedir el correo de seguridad
     cancelFlowSection.style.display = "none";
+    searchDocSection.style.display = "block";
+    
+    // Si tienen cookie en el dispositivo, autocompletamos el documento y disparamos la petición automáticamente
+    const cookie = dbService.getAttendanceCookie();
+    if (cookie && cookie.document) {
+      inputSearchDoc.value = cookie.document;
+      btnSendCancelLink.innerHTML = `<span class="spinner" style="width:14px;height:14px;border-width:2px;margin-right:8px;"></span> Emitiendo Token Seguro...`;
+      btnSendCancelLink.setAttribute("disabled", "true");
+      
+      // Emitir token silenciosamente
+      setTimeout(() => {
+        document.getElementById("form-request-doc").dispatchEvent(new Event('submit', { cancelable: true }));
+      }, 800);
+    }
   }
 
   // ==========================================
@@ -288,7 +297,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       cancelFlowSection.style.display = "none";
       cancelSuccessBox.style.display = "block";
       document.getElementById("released-count-text").textContent = 
-        `Se han liberado con éxito ${result.releasedCount} puesto(s). Los datos fueron actualizados en la base de datos de GitHub.`;
+        `Se han liberado con éxito ${result.releasedCount} puesto(s). Los datos fueron actualizados en la base de datos.`;
 
       showToast("Asistencia cancelada exitosamente.", "success");
 

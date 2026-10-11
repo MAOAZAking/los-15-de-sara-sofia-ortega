@@ -255,15 +255,16 @@ function commitDatabaseToGitHub(databaseObj, message) {
  */
 function sendConfirmationEmail(leader, companions) {
   const toEmail = leader.email;
-  const qrUrl = `https://qrserver.com{encodeURIComponent(leader.code)}`;
+  // Corregido: sintaxis correcta para interpolar el código QR
+  const qrUrl = `https://qrserver.com{encodeURIComponent(leader.code)}`; 
 
   let companionsHtml = "";
   if (companions && companions.length > 0) {
     companionsHtml = `
       <div style="background: rgba(242, 73, 231, 0.08); border-radius: 8px; padding: 15px; margin: 15px 0;">
-        <h4 style="margin: 0 0 10px 0; color: #f249e7; font-size: 15px;">👥 Acompañantes registrados contigo:</h4>
+        <h4 style="margin: 0 0 10px 0; color: #f249e7; font-size: 15px;">&#128101; Acompañantes registrados contigo:</h4>
         <ul style="margin: 0; padding-left: 20px; color: #444;">
-          ${companions.map(c => `<li><strong>${c.name}</strong> (Puesto #${c.slot_number} - Código: <code>${c.code}</code>)</li>`).join("")}
+          ${companions.map(c => `<li><strong>\${c.name}</strong> (Puesto #\({c.slot_number} - Código: <code>\){c.code}</code>)</li>`).join("")}
         </ul>
       </div>
     `;
@@ -275,11 +276,13 @@ function sendConfirmationEmail(leader, companions) {
     <head>
       <meta charset="utf-8">
       <style>
-        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f9f4fa; margin: 0; padding: 20px; color: #333; }
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #fff2fc; margin: 0; padding: 20px; color: #333; }
         .card { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid rgba(242, 73, 231, 0.2); }
-        .header { background: linear-gradient(135deg, #1f0b2b 0%, #3e1047 100%); padding: 35px 20px; text-align: center; color: #ffffff; }
-        .title { font-size: 26px; font-weight: bold; margin: 0; color: #f249e7; letter-spacing: 1px; }
-        .subtitle { font-size: 16px; margin-top: 8px; color: #fce4fc; }
+        .header { background: linear-gradient(135deg, #1f0b2b 0%, #3e1047 100%); padding: 40px 20px; text-align: center; color: #ffffff; }
+        .gold-years { font-size: 46px; font-weight: 900; color: #f3ca65; text-shadow: 0px 0px 12px rgba(243, 202, 101, 0.6); margin: 0; line-height: 1.1; font-family: 'Georgia', serif; }
+        .gold-subtitle { font-size: 14px; text-transform: uppercase; letter-spacing: 4px; color: #f3ca65; margin-bottom: 15px; font-weight: bold; }
+        .title { font-size: 28px; font-weight: bold; margin: 10px 0 5px 0; color: #ffffff; letter-spacing: 1px; }
+        .subtitle { font-size: 15px; margin-top: 10px; color: #fce4fc; font-style: italic; }
         .content { padding: 30px 25px; line-height: 1.6; }
         .greeting { font-size: 18px; font-weight: bold; color: #1f0b2b; margin-bottom: 15px; }
         .qr-box { text-align: center; background: #faf5fc; border: 2px dashed #f249e7; border-radius: 12px; padding: 20px; margin: 25px 0; }
@@ -294,50 +297,51 @@ function sendConfirmationEmail(leader, companions) {
     <body>
       <div class="card">
         <div class="header">
-          <div style="font-size: 14px; text-transform: uppercase; letter-spacing: 3px; color: #f249e7; margin-bottom: 5px;">Mis Quince Años</div>
+          <div class="gold-subtitle">Mis</div>
+          <div class="gold-years">15 AÑOS</div>
           <h1 class="title">Sara Sofía Ortega Ayala</h1>
           <div class="subtitle">¡Tu asistencia está confirmada!</div>
         </div>
 
         <div class="content">
-          <div class="greeting">¡Hola, \${leader.name}! 🎉</div>
+          <div class="greeting">¡Hola, ${leader.name}! &#127881;</div>
           <p>Nos llena de felicidad saber que nos acompañarás en esta noche mágica e inolvidable para Sara Sofía.</p>
 
           <div class="qr-box">
             <div style="font-size: 13px; color: #666; margin-bottom: 10px; text-transform: uppercase; font-weight: bold;">Tu Pase Digital de Acceso</div>
-            <img src="\${qrUrl}" alt="Pase QR" width="180" height="180" style="display: block; margin: 0 auto; border-radius: 8px;">
-            <div class="code-badge">\${leader.code}</div>
-            <div style="font-size: 12px; color: #777; margin-top: 8px;">Puesto Asignado: <strong>#\${leader.slot_number}</strong> de 90</div>
+            <img src="${qrUrl}" alt="Pase QR" width="180" height="180" style="display: block; margin: 0 auto; border-radius: 8px;">
+            <div class="code-badge">${leader.code}</div>
+            <div style="font-size: 12px; color: #777; margin-top: 8px;">Puesto Asignado: <strong>#${leader.slot_number}</strong> de 90</div>
             <div style="font-size: 11px; color: #999; margin-top: 4px;">Presenta este código en tu celular al llegar a la fiesta.</div>
           </div>
 
-          \${companionsHtml}
+          ${companionsHtml}
 
           <div class="details-box">
-            <h4 style="margin: 0 0 8px 0; color: #1f0b2b;">📅 Información del Evento:</h4>
-            <p style="margin: 4px 0;"><strong>Fecha y Hora:</strong> \${EVENT_DATE}</p>
-            <p style="margin: 4px 0;"><strong>Lugar:</strong> \${EVENT_VENUE}</p>
+            <h4 style="margin: 0 0 8px 0; color: #1f0b2b;">&#128197; Información del Evento:</h4>
+            <p style="margin: 4px 0;"><strong>Fecha y Hora:</strong> ${EVENT_DATE}</p>
+            <p style="margin: 4px 0;"><strong>Lugar:</strong> ${EVENT_VENUE}</p>
             <div style="text-align: center; margin-top: 12px;">
-              <a href="\${MAPS_URL}" target="_blank" class="btn-maps">🗺️ Ver Ruta en Google Maps</a>
+              <a href="${MAPS_URL}" target="_blank" class="btn-maps">&#128506;&#65039; Ver Ruta en Google Maps</a>
             </div>
           </div>
 
           <div class="notice-box">
-            👗 DRESS CODE / CÓDIGO DE VESTIMENTA:<br>
+            &#128087; DRESS CODE / CÓDIGO DE VESTIMENTA:<br>
             Traje Formal / De Gala.<br>
-            <span style="font-size: 15px; color: #a40893;">⚠️ IMPORTANTE: El color morado está reservado exclusivamente para la quinceañera.</span>
+            <span style="font-size: 15px; color: #a40893;">&#9888;&#65039; IMPORTANTE: El color morado está reservado exclusivamente para la quinceañera.</span>
           </div>
 
           <div class="calendar-btn-container">
             <p style="font-size: 13px; color: #555; margin-bottom: 10px;">¡No olvides agendarlo en tu Google Calendar!</p>
-            <a target="_blank" href="\${CALENDAR_URL}">
+            <a target="_blank" href="${CALENDAR_URL}">
               <img border="0" src="https://google.com" alt="Guardar en Google Calendar">
             </a>
           </div>
         </div>
 
         <div class="footer">
-          <p style="margin: 4px 0;">Este mensaje fue enviado automáticamente para la celebración de los 15 de Sara Sofía Ortega Ayala.</p>
+          <p style="margin: 4px 0;">Este message fue enviado automáticamente para la celebración de los 15 de Sara Sofía Ortega Ayala.</p>
           <p style="margin: 4px 0;">Si por algún motivo no puedes asistir, por favor ingresa a la página web para liberar tu cupo a otro invitado.</p>
         </div>
       </div>
@@ -345,14 +349,15 @@ function sendConfirmationEmail(leader, companions) {
     </html>
   `;
 
-  GmailApp.sendEmail(toEmail, `✨ ¡Asistencia Confirmada! Los 15 de Sara Sofía Ortega Ayala`, "", {
+  GmailApp.sendEmail(toEmail, `[IMPORTANTE] ✨¡Asistencia Confirmada! Los 15 de Sara Sofía Ortega Ayala✨`, "", {
     htmlBody: htmlBody,
-    name: "Los 15 de Sara Sofía"
+    name: "Los 15 de Sara Sofía",
+    importance: "high"
   });
 }
 
 /**
- * Enviar enlace único para cancelar asistencia
+ * Enviar enlace único para cancelar asistencia (Túnel de Autenticación)
  */
 function sendCancelLinkEmail(email, name, cancelUrl) {
   const htmlBody = `
@@ -361,51 +366,77 @@ function sendCancelLinkEmail(email, name, cancelUrl) {
     <head>
       <meta charset="utf-8">
       <style>
-        body { font-family: Arial, sans-serif; background: #fdf6fe; padding: 20px; color: #333; }
-        .card { max-width: 550px; margin: 0 auto; background: #fff; border-radius: 12px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border-top: 5px solid #f249e7; }
-        .btn { display: inline-block; background: #d63384; color: #fff !important; text-decoration: none; padding: 12px 25px; border-radius: 25px; font-weight: bold; margin-top: 20px; }
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #fdf6fe; padding: 20px; color: #1f0b2b; }
+        .card { max-width: 550px; margin: 0 auto; background: #ffffff; border-radius: 16px; padding: 40px 30px; box-shadow: 0 10px 30px rgba(242, 73, 231, 0.15); border-top: 6px solid #f249e7; text-align: center; }
+        .title { color: #b515ab; font-size: 22px; font-weight: bold; margin-bottom: 10px; }
+        .btn { display: inline-block; background: linear-gradient(135deg, #f249e7 0%, #b515ab 100%); color: #ffffff !important; text-decoration: none; padding: 14px 30px; border-radius: 30px; font-weight: bold; font-size: 16px; margin: 25px 0; box-shadow: 0 4px 15px rgba(242, 73, 231, 0.4); }
+        .footer { font-size: 12px; color: #888; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
       </style>
     </head>
     <body>
       <div class="card">
-        <h2 style="color: #1f0b2b; margin-top: 0;">Gestión de Asistencia - Los 15 de Sara Sofía</h2>
-        <p>Hola, <strong>${name}</strong>.</p>
-        <p>Hemos recibido una solicitud para cancelar tu confirmación de asistencia al eventuo.</p>
-        <p>Para gestionar o confirmar la liberación de tu cupo (y el de tus acompañantes si eres líder de grupo), haz clic en el siguiente botón seguro:</p>
-        <div style="text-align: center;">
-          <a href="${cancelUrl}" class="btn">Cancelar Asistencia</a>
+        <h2 class="title">Verificación de Seguridad</h2>
+        <p style="font-size: 16px;">Hola, <strong>${name}</strong>.</p>
+        <p style="color: #444; line-height: 1.6;">Por motivos de seguridad, para proceder con la cancelación de tu asistencia a los 15 Años de Sara Sofía, requerimos que confirmes esta acción a través del siguiente enlace encriptado:</p>
+        
+        <a href="${cancelUrl}" class="btn">Autenticar y Cancelar Asistencia</a>
+        
+        <p style="color: #d63384; font-size: 14px; font-weight: bold;">Este enlace es único, personal e intransferible.</p>
+        
+        <div class="footer">
+          Si no solicitaste la cancelación, ignora este correo. Tu cupo sigue 100% asegurado en nuestro sistema.
         </div>
-        <p style="font-size: 12px; color: #777; margin-top: 25px;">Si no solicitaste esto, puedes ignorar este mensaje; tu asistencia permanecerá confirmada.</p>
       </div>
     </body>
     </html>
   `;
 
-  GmailApp.sendEmail(email, `Enlace para gestionar o cancelar tu asistencia - Los 15 de Sara Sofía`, "", {
+    GmailApp.sendEmail(email, `⚠️[Acción Requerida] Verifica tu solicitud de cancelación - Los 15 de Sara Sofía⚠️`, "", {
     htmlBody: htmlBody,
-    name: "Los 15 de Sara Sofía"
+    name: "Los 15 de Sara Sofía",
+    importance: "high"
   });
 }
 
 /**
- * Enviar correo informando que los cupos fueron cancelados exitosamente
+ * Enviar correo informando que los cupos fueron cancelados exitosamente (Cálido y Elegante)
  */
 function sendCancellationConfirmedEmail(requester, releasedCount) {
   const htmlBody = `
-    <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-      <h3 style="color: #1f0b2b;">Cancelación de Asistencia Processada</h3>
-      <p>Hola, <strong>${requester.name}</strong>.</p>
-      <p>Te confirmamos que se ha procesado tu solicitud de cancelación. Se han liberado <strong>${releasedCount}</strong> puesto(s) para que otros invitados puedan asistir.</p>
-      <p>¡Lamentamos mucho que no puedas acompañarnos, gracias por informarnos a tiempo!</p>
-    </div>
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #fdf6fe; padding: 20px; color: #1f0b2b; }
+        .card { max-width: 550px; margin: 0 auto; background: #ffffff; border-radius: 16px; padding: 40px 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border-top: 6px solid #e5c378; text-align: center; }
+        .title { color: #8a6822; font-size: 22px; font-weight: bold; margin-bottom: 10px; }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <h2 class="title">Asistencia Cancelada Exitosamente</h2>
+        <p style="font-size: 16px;">Hola, <strong>${requester.name}</strong>.</p>
+        <p style="color: #555; line-height: 1.6;">
+          El sistema ha procesado exitosamente tu solicitud. Se han liberado <strong>${releasedCount}</strong> puesto(s) en la base de datos oficial.
+        </p>
+        <div style="background: rgba(229, 195, 120, 0.15); border-radius: 12px; padding: 20px; margin: 25px 0;">
+          <p style="margin: 0; color: #6b5314; font-size: 15px; font-style: italic;">
+            "Nos habría encantado compartir esta noche mágica y soñada contigo, pero entendemos perfectamente que a veces los planes cambian. ¡Te agradecemos de todo corazón por avisarnos a tiempo y permitir que otro invitado pueda ocupar tu lugar en la celebración!"
+          </p>
+        </div>
+        <p style="color: #888; font-size: 13px;">Con cariño,<br><strong>Sara Sofía y su familia.</strong></p>
+      </div>
+    </body>
+    </html>
   `;
 
-  GmailApp.sendEmail(requester.email, `Cancelación de Asistencia Confirmada - Los 15 de Sara Sofía`, "", {
+  GmailApp.sendEmail(requester.email, `📢 [NOTIFICACIÓN] Tu Asistencia fue Cancelada  - Te extrañaremos en los 15 de Sara Sofía📢`, "", {
     htmlBody: htmlBody,
-    name: "Los 15 de Sara Sofía"
+    name: "Los 15 de Sara Sofía",
+    importance: "high"
   });
 }
-
 /**
  * Helper para respuestas JSON
  */

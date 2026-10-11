@@ -600,20 +600,18 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   // ==========================================
-  // RENDERIZADO DEL PASE DIGITAL VIP CON QR
+  // RENDERIZADO DEL PASE DIGITAL VIP (Y EFECTO INVITADO YA INGRESADO)
   // ==========================================
-
   async function renderVipPass(cookieData) {
     if (!vipPassSection) return;
 
-    // Ocultar botón de confirmar asistencia
     if (mainRsvpBtn) mainRsvpBtn.style.display = "none";
     const statusContainer = document.getElementById("vacancies-bar-container");
     if (statusContainer) statusContainer.style.display = "none";
 
-    // Consultar estado en la base de datos para ver si ya ingresó (checked_in)
     let checkedIn = false;
     try {
+      // Forzamos al servidor a darnos la última verdad absoluta
       const db = await dbService.fetchDatabase();
       const slotObj = db.slots.find(s => s.guest && s.guest.code === cookieData.code);
       if (slotObj && slotObj.guest && slotObj.guest.checked_in) {
@@ -622,68 +620,138 @@ document.addEventListener("DOMContentLoaded", async () => {
     } catch (e) {}
 
     vipPassSection.style.display = "block";
-    vipPassSection.innerHTML = `
-      <div class="vip-pass-card">
+    
+    if (checkedIn) {
+      // ESTADO: EL INVITADO YA INGRESÓ A LA FIESTA (NO MOSTRAR QR)
+      vipPassSection.innerHTML = `
+        <div class="vip-pass-badge" style="background: linear-gradient(90deg, #198754, #20c997); color: #fff;">
+          ACCESO AUTORIZADO
+        </div>
+        <h2 class="vip-guest-name">${cookieData.name}</h2>
+        <div class="vip-slot-info" style="color: #2ecc71;">Puesto Asignado: #${cookieData.slot_number} de 90</div>
+        
+        <div class="checked-in-banner" style="margin-top: 30px; border: 2px solid #2ecc71; box-shadow: 0 0 30px rgba(40, 167, 69, 0.4);">
+          <h3 style="margin-bottom:10px; font-size: 22px;">✨ ¡Bienvenid@ a la Fiesta! ✨</h3>
+          <p style="font-size: 14px; font-weight: normal;">Tu acceso ha sido verificado. Disfruta de una noche inolvidable celebrando los 15 Años de Sara Sofía.</p>
+        </div>
+      `;
+      
+      // Disparar confeti visual en el celular del invitado
+      triggerGuestConfetti();
+
+    } else {
+      // ESTADO: AÚN NO HA INGRESADO (MOSTRAR QR Y OPCIONES)
+      vipPassSection.innerHTML = `
         <div class="vip-pass-badge">Pase Oficial de Invitado VIP</div>
         <h2 class="vip-guest-name">${cookieData.name}</h2>
         <div class="vip-slot-info">Puesto Asignado: #${cookieData.slot_number} de 90</div>
-
-        ${checkedIn ? `
-          <div class="checked-in-banner">
-            🎉 ¡Bienvenido! Ya hiciste tu ingreso a la fiesta.
-          </div>
-        ` : `
-          <div class="qr-code-wrapper" id="pass-qrcode-container"></div>
-          <div>
-            <div class="vip-pass-code">${cookieData.code}</div>
-            <p style="font-size: 12px; color: #ccc; margin-top: 5px;">Presenta este código QR en la entrada el 20 de Diciembre de 2026</p>
-          </div>
-        `}
-
+        
+        <div class="qr-code-wrapper" id="pass-qrcode-container"></div>
+        <div class="vip-pass-code">${cookieData.code}</div>
+        <p style="font-size: 11px; color: #aaa; margin-bottom: 20px;">Presenta este código QR en la entrada el 20 de Diciembre de 2026</p>
+        
         ${cookieData.companions && cookieData.companions.length > 0 ? `
-          <div style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 12px; margin: 15px 0; text-align: left; font-size: 13px;">
-            <div style="color: var(--gold-light); font-weight: bold; margin-bottom: 6px;">👥 Tus Acompañantes:</div>
-            <ul style="padding-left: 20px; color: #ddd;">
-              ${cookieData.companions.map(c => `<li>${c.name} (Puesto #${c.slot_number} - Código: <code>${c.code}</code>)</li>`).join("")}
-            </ul>
-          </div>
-        ` : ''}
-
-        <div class="vip-actions">
-          <a target="_blank" href="${config.EVENT.GOOGLE_CALENDAR_URL}" class="btn-calendar-pass">
-            📅 Agendar en Google Calendar
-          </a>
-          <button type="button" class="btn-cancel-pass" id="btn-cancel-my-pass">
-            ❌ Cancelar Asistencia
-          </button>
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; text-align: left;">
+          <h4 style="color: var(--gold-light); margin-bottom: 8px; font-size: 13px;">👥 Tus Acompañantes:</h4>
+          <ul style="font-size: 12px; color: #ccc; padding-left: 20px; margin: 0;">
+            ${cookieData.companions.map(c => `<li><strong>${c.name}</strong> (Puesto #${c.slot_number} - Código: ${c.code})</li>`).join('')}
+          </ul>
         </div>
-      </div>
-    `;
+        ` : ''}
+        
+        <div class="vip-actions">
+          <a href="${config.EVENT.GOOGLE_CALENDAR_URL}" target="_blank" class="btn-calendar-pass">📅 Agendar en Google Calendar</a>
+          <button id="btn-cancel-my-pass" class="btn-cancel-pass">❌ Cancelar Asistencia</button>
+        </div>
+      `;
 
-    // Generar código QR en el contenedor si no ha ingresado
-    if (!checkedIn) {
-      const qrContainer = document.getElementById("pass-qrcode-container");
-      if (qrContainer && window.QRCode) {
-        qrContainer.innerHTML = "";
-        new QRCode(qrContainer, {
-          text: cookieData.code,
-          width: 180,
-          height: 180,
-          colorDark: "#180424",
-          colorLight: "#ffffff",
-          correctLevel: QRCode.CorrectLevel.H
-        });
-      }
-    }
+      // Renderizar código QR
+      setTimeout(() => {
+        const qrContainer = document.getElementById("pass-qrcode-container");
+        if (qrContainer && window.QRCode) {
+          new QRCode(qrContainer, {
+            text: cookieData.code,
+            width: 180,
+            height: 180,
+            colorDark: "#180424",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+          });
+        }
+      }, 100);
 
-    // Botón de Cancelar Asistencia desde el Pase
-    const cancelPassBtn = document.getElementById("btn-cancel-my-pass");
-    if (cancelPassBtn) {
-      cancelPassBtn.addEventListener("click", () => {
-        window.location.href = `cancel.html?code=${encodeURIComponent(cookieData.code)}`;
-      });
+      // Activar botón de cancelar
+      setTimeout(() => {
+        const cancelPassBtn = document.getElementById("btn-cancel-my-pass");
+        if (cancelPassBtn) {
+          cancelPassBtn.addEventListener("click", () => {
+            window.location.href = `cancel.html?code=${encodeURIComponent(cookieData.code)}`;
+          });
+        }
+      }, 200);
     }
   }
+
+  // LÓGICA DEL MINI CONFETI PARA EL INVITADO
+  function triggerGuestConfetti() {
+    const canvas = document.createElement("canvas");
+    canvas.style.position = "fixed";
+    canvas.style.top = "0";
+    canvas.style.left = "0";
+    canvas.style.width = "100%";
+    canvas.style.height = "100%";
+    canvas.style.pointerEvents = "none";
+    canvas.style.zIndex = "9999";
+    document.body.appendChild(canvas);
+
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const particles = [];
+    const colors = ["#F249E7", "#2ecc71", "#e5c378", "#ffffff"];
+    for (let i = 0; i < 80; i++) {
+      particles.push({
+        x: canvas.width / 2,
+        y: canvas.height / 2 - 50,
+        vx: (Math.random() - 0.5) * 20,
+        vy: (Math.random() - 1) * 20,
+        size: Math.random() * 6 + 3,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        tilt: Math.floor(Math.random() * 10) - 10,
+        tiltAngleInc: (Math.random() * 0.07) + 0.05,
+        tiltAngle: 0
+      });
+    }
+
+    let animationId;
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach((p) => {
+        p.tiltAngle += p.tiltAngleInc;
+        p.y += (Math.cos(p.tiltAngle) + 1 + p.size / 2) / 2;
+        p.x += Math.sin(p.tiltAngle) * 2 + p.vx;
+        p.vy += 0.4; // Gravedad suave
+        p.y += p.vy;
+
+        ctx.beginPath();
+        ctx.lineWidth = p.size;
+        ctx.strokeStyle = p.color;
+        ctx.moveTo(p.x + p.tilt + p.size, p.y);
+        ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.size);
+        ctx.stroke();
+      });
+      animationId = requestAnimationFrame(render);
+    }
+    render();
+
+    // Autodestruir el canvas después de 5 segundos
+    setTimeout(() => {
+      cancelAnimationFrame(animationId);
+      if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
+    }, 5000);
+  }
+  
 
   // ==========================================
   // CONTADOR REGRESIVO A LA FECHA
