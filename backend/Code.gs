@@ -1,7 +1,7 @@
 /**
  * ====================================================================
  * BACKEND GOOGLE APPS SCRIPT - LOS 15 DE SARA SOFÍA ORTEGA AYALA
- * Repositorio: https://github.com/MAOAZAking/los-15-de-sara-sofia-ortega
+ * Repositorio: https://github.com
  * Correo emisor: maoaza13579@gmail.com
  * ====================================================================
  * 
@@ -24,8 +24,8 @@ const DB_FILE_PATH = "data/database.json";
 const EVENT_NAME = "Los 15 Años de Sara Sofía Ortega Ayala";
 const EVENT_DATE = "Domingo, 20 de Diciembre de 2026 - 7:00 PM";
 const EVENT_VENUE = "Cra. 23 # 56-50, Comuna 8, Cali, Valle del Cauca";
-const MAPS_URL = "https://www.google.com/maps/dir//Cra.+23+%2356-50,+Comuna+8,+Cali,+Valle+del+Cauca/@3.4417114,-76.4965274,17z/data=!4m18!1m8!3m7!1s0x8e30a70733ebf565:0xc9f09c63545da21c!2sCra.+23+%2356-50,+Comuna+8,+Cali,+Valle+del+Cauca!3b1!8m2!3d3.4415515!4d-76.4965047!16s%2Fg%2F11vjm1vyjl!4m8!1m0!1m5!1m1!1s0x8e30a70733ebf565:0xc9f09c63545da21c!2m2!1d-76.4965047!2d3.4415515!3e0?entry=ttu";
-const CALENDAR_URL = "https://calendar.google.com/calendar/event?action=TEMPLATE&tmeid=MmVrbnRqNjMxZ201a3RpcGNvMnExamJ2YnEgbWFvYXphMTM1NzlAbQ&tmsrc=maoaza13579%40gmail.com";
+const MAPS_URL = "https://google.com";
+const CALENDAR_URL = "https://google.com";
 const PRIMARY_COLOR = "#F249E7";
 
 /**
@@ -46,9 +46,6 @@ function doGet(e) {
   }
 }
 
-/**
- * Manejo de peticiones POST (Registros, cancelaciones, commits y envíos de correo)
- */
 /**
  * Manejo de peticiones POST (Registros, cancelaciones, commits y envíos de correo)
  */
@@ -166,7 +163,7 @@ function doPost(e) {
  */
 function getDatabaseFromGitHub() {
   const token = PropertiesService.getScriptProperties().getProperty("GITHUB_TOKEN");
-  const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${DB_FILE_PATH}?ref=${GITHUB_BRANCH}`;
+  const url = `https://github.com{GITHUB_OWNER}/${GITHUB_REPO}/contents/${DB_FILE_PATH}?ref=${GITHUB_BRANCH}`;
 
   const headers = {
     "Accept": "application/vnd.github.v3+json",
@@ -201,7 +198,7 @@ function commitDatabaseToGitHub(databaseObj, message) {
     return { skipped: true, reason: "No GITHUB_TOKEN provided" };
   }
 
-  const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${DB_FILE_PATH}`;
+  const url = `https://github.com{GITHUB_OWNER}/${GITHUB_REPO}/contents/${DB_FILE_PATH}`;
 
   // 1. Obtener SHA actual del archivo
   const getFileRes = UrlFetchApp.fetch(url + `?ref=${GITHUB_BRANCH}`, {
@@ -258,7 +255,7 @@ function commitDatabaseToGitHub(databaseObj, message) {
  */
 function sendConfirmationEmail(leader, companions) {
   const toEmail = leader.email;
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(leader.code)}`;
+  const qrUrl = `https://qrserver.com{encodeURIComponent(leader.code)}`;
 
   let companionsHtml = "";
   if (companions && companions.length > 0) {
@@ -303,25 +300,25 @@ function sendConfirmationEmail(leader, companions) {
         </div>
 
         <div class="content">
-          <div class="greeting">¡Hola, ${leader.name}! 🎉</div>
+          <div class="greeting">¡Hola, \${leader.name}! 🎉</div>
           <p>Nos llena de felicidad saber que nos acompañarás en esta noche mágica e inolvidable para Sara Sofía.</p>
 
           <div class="qr-box">
             <div style="font-size: 13px; color: #666; margin-bottom: 10px; text-transform: uppercase; font-weight: bold;">Tu Pase Digital de Acceso</div>
-            <img src="${qrUrl}" alt="Pase QR" width="180" height="180" style="display: block; margin: 0 auto; border-radius: 8px;">
-            <div class="code-badge">${leader.code}</div>
-            <div style="font-size: 12px; color: #777; margin-top: 8px;">Puesto Asignado: <strong>#${leader.slot_number}</strong> de 90</div>
+            <img src="\${qrUrl}" alt="Pase QR" width="180" height="180" style="display: block; margin: 0 auto; border-radius: 8px;">
+            <div class="code-badge">\${leader.code}</div>
+            <div style="font-size: 12px; color: #777; margin-top: 8px;">Puesto Asignado: <strong>#\${leader.slot_number}</strong> de 90</div>
             <div style="font-size: 11px; color: #999; margin-top: 4px;">Presenta este código en tu celular al llegar a la fiesta.</div>
           </div>
 
-          ${companionsHtml}
+          \${companionsHtml}
 
           <div class="details-box">
             <h4 style="margin: 0 0 8px 0; color: #1f0b2b;">📅 Información del Evento:</h4>
-            <p style="margin: 4px 0;"><strong>Fecha y Hora:</strong> ${EVENT_DATE}</p>
-            <p style="margin: 4px 0;"><strong>Lugar:</strong> ${EVENT_VENUE}</p>
+            <p style="margin: 4px 0;"><strong>Fecha y Hora:</strong> \${EVENT_DATE}</p>
+            <p style="margin: 4px 0;"><strong>Lugar:</strong> \${EVENT_VENUE}</p>
             <div style="text-align: center; margin-top: 12px;">
-              <a href="${MAPS_URL}" target="_blank" class="btn-maps">🗺️ Ver Ruta en Google Maps</a>
+              <a href="\${MAPS_URL}" target="_blank" class="btn-maps">🗺️ Ver Ruta en Google Maps</a>
             </div>
           </div>
 
@@ -333,8 +330,8 @@ function sendConfirmationEmail(leader, companions) {
 
           <div class="calendar-btn-container">
             <p style="font-size: 13px; color: #555; margin-bottom: 10px;">¡No olvides agendarlo en tu Google Calendar!</p>
-            <a target="_blank" href="${CALENDAR_URL}">
-              <img border="0" src="https://calendar.google.com/calendar/images/ext/gc_button1_es-419.gif" alt="Guardar en Google Calendar">
+            <a target="_blank" href="\${CALENDAR_URL}">
+              <img border="0" src="https://google.com" alt="Guardar en Google Calendar">
             </a>
           </div>
         </div>
@@ -373,7 +370,7 @@ function sendCancelLinkEmail(email, name, cancelUrl) {
       <div class="card">
         <h2 style="color: #1f0b2b; margin-top: 0;">Gestión de Asistencia - Los 15 de Sara Sofía</h2>
         <p>Hola, <strong>${name}</strong>.</p>
-        <p>Hemos recibido una solicitud para cancelar tu confirmación de asistencia al evento.</p>
+        <p>Hemos recibido una solicitud para cancelar tu confirmación de asistencia al eventuo.</p>
         <p>Para gestionar o confirmar la liberación de tu cupo (y el de tus acompañantes si eres líder de grupo), haz clic en el siguiente botón seguro:</p>
         <div style="text-align: center;">
           <a href="${cancelUrl}" class="btn">Cancelar Asistencia</a>
@@ -396,7 +393,7 @@ function sendCancelLinkEmail(email, name, cancelUrl) {
 function sendCancellationConfirmedEmail(requester, releasedCount) {
   const htmlBody = `
     <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-      <h3 style="color: #1f0b2b;">Cancelación de Asistencia Procesada</h3>
+      <h3 style="color: #1f0b2b;">Cancelación de Asistencia Processada</h3>
       <p>Hola, <strong>${requester.name}</strong>.</p>
       <p>Te confirmamos que se ha procesado tu solicitud de cancelación. Se han liberado <strong>${releasedCount}</strong> puesto(s) para que otros invitados puedan asistir.</p>
       <p>¡Lamentamos mucho que no puedas acompañarnos, gracias por informarnos a tiempo!</p>

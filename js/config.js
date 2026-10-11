@@ -42,10 +42,10 @@ const CONFIG = {
     RAW_DB_URL: "https://raw.githubusercontent.com/MAOAZAking/los-15-de-sara-sofia-ortega/main/data/database.json"
   },
 
-  // Backend URL (Google Apps Script Web App desplegada con tu correo maoaza13579@gmail.com)
+  // Backend URL (Google Apps Script Web App desplegada con tu correo)
   // Al desplegar tu Google Apps Script, pega la URL generada aquí.
   // Mientras esté vacía o en desarrollo local, el sistema usa el modo híbrido con persistencia local y sincronización.
-  BACKEND_API_URL: "https://script.google.com/macros/s/AKfycbz0yLF4VzJm_4wJcR9yuA20VI-SXAGRsglQiVL5PGrVbwYN9ua-hhvuxlHJPv3Eu0F4/exec", 
+  BACKEND_API_URL: "https://script.google.com/macros/s/AKfycbxNNs4efqJsD3quOLQ6FqAj3Vxv9HkAn1h2vHNhgB7ZUh0vZlxeMgQSyFmgYcmVPgEj/exec", 
 
   // Frase estricta para confirmación de cancelación
   CANCEL_SECURITY_PHRASE: "CANCELAR asistencia"
