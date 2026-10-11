@@ -49,16 +49,10 @@ function doGet(e) {
 /**
  * Manejo de peticiones POST (Registros, cancelaciones, commits y envíos de correo)
  */
+/**
+ * Manejo de peticiones POST (Registros, cancelaciones, commits y envíos de correo)
+ */
 function doPost(e) {
-  if (action === "admin_login") {
-    const validUser = PropertiesService.getScriptProperties().getProperty("ADMIN_USER");
-    const validPass = PropertiesService.getScriptProperties().getProperty("ADMIN_PASS");
-  
-    if (payload.user === validUser && payload.pass === validPass) {
-      return createJsonResponse({ success: true, token: "VIP_AUTH_GRANTED" });
-    }
-    return createJsonResponse({ success: false, error: "Credenciales inválidas" });
-  }
   try {
     let payload;
     if (e.postData && e.postData.contents) {
@@ -69,6 +63,18 @@ function doPost(e) {
 
     const action = payload.action;
 
+    // 0. ADMIN LOGIN SERVERLESS (REPARADO Y REUBICADO)
+    if (action === "admin_login") {
+      const validUser = PropertiesService.getScriptProperties().getProperty("ADMIN_USER");
+      const validPass = PropertiesService.getScriptProperties().getProperty("ADMIN_PASS");
+      
+      // Validación estricta
+      if (validUser && validPass && payload.user === validUser && payload.pass === validPass) {
+        return createJsonResponse({ success: true, token: "VIP_AUTH_GRANTED" });
+      }
+      return createJsonResponse({ success: false, error: "Credenciales inválidas o no configuradas" });
+    }
+
     // 1. REGISTRAR ASISTENCIA Y COMITEAR
     if (action === "register") {
       const leader = payload.leader;
@@ -76,7 +82,6 @@ function doPost(e) {
       const updatedDb = payload.database;
       const commitMessage = payload.commit_message || `Confirmación de asistencia: ${leader.name}`;
 
-      // A. Realizar commit en GitHub
       let commitResult = null;
       try {
         commitResult = commitDatabaseToGitHub(updatedDb, commitMessage);
@@ -84,7 +89,6 @@ function doPost(e) {
         Logger.log("Error comiteando a GitHub: " + err);
       }
 
-      // B. Enviar correo de confirmación desde maoaza13579@gmail.com
       sendConfirmationEmail(leader, companions);
 
       return createJsonResponse({
@@ -101,7 +105,6 @@ function doPost(e) {
       const updatedDb = payload.database;
       const commitMessage = payload.commit_message || `Cancelación de asistencia: ${requester.name}`;
 
-      // A. Realizar commit en GitHub
       let commitResult = null;
       try {
         commitResult = commitDatabaseToGitHub(updatedDb, commitMessage);
@@ -109,7 +112,6 @@ function doPost(e) {
         Logger.log("Error comiteando a GitHub: " + err);
       }
 
-      // B. Enviar correo confirmando liberación de cupos
       sendCancellationConfirmedEmail(requester, releasedSlots.length);
 
       return createJsonResponse({

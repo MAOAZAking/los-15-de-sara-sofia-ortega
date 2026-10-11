@@ -76,7 +76,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       // 1_ARQUITECTURA_DE_SEGURIDAD_OBSCURA: Autenticación 100% Serverless
       const btnSubmit = document.querySelector(".btn-login-submit");
       const originalText = btnSubmit.innerHTML;
-      btnSubmit.innerHTML = `<span class="spinner" style="width:15px;height:15px;border-width:2px;margin-right:8px;"></span> Encriptando túnel...`;
+      btnSubmit.innerHTML = `<span class="spinner" style="width:15px;height:15px;border-width:2px;margin-right:8px;"></span> Encriptando...`;
       btnSubmit.disabled = true;
 
       try {
@@ -100,6 +100,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           showToast("Acceso Denegado. Anomalía detectada.", "error");
         }
       } catch(err) {
+        console.error(err);
         showToast("Brecha de red: El servidor maestro no responde.", "error");
       } finally {
         btnSubmit.innerHTML = originalText;

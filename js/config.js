@@ -47,9 +47,6 @@ const CONFIG = {
   // Mientras esté vacía o en desarrollo local, el sistema usa el modo híbrido con persistencia local y sincronización.
   BACKEND_API_URL: "https://script.google.com/macros/s/AKfycbz0yLF4VzJm_4wJcR9yuA20VI-SXAGRsglQiVL5PGrVbwYN9ua-hhvuxlHJPv3Eu0F4/exec", 
 
-  // 1_ARQUITECTURA_DE_SEGURIDAD_OBSCURA: 
-  // Credenciales eliminadas del cliente. La autenticación es 100% Serverless.
-
   // Frase estricta para confirmación de cancelación
   CANCEL_SECURITY_PHRASE: "CANCELAR asistencia"
 };

@@ -1,79 +1,102 @@
 /* ==========================================================================
-   LOS 15 DE SARA SOFÍA - MODO PREMIUM LIGHT
+   LOS 15 DE SARA SOFÍA - PREMIUM LIGHT THEME (main-light.css)
+   Reescribe las variables CSS principales del root
    ========================================================================== */
 :root {
   --primary-rgb: 242, 73, 231;
-  --primary-color: #f249e7;
-  --primary-light: #ff7df7;
-  --primary-dark: #b515ab;
-  --primary-glow: rgba(242, 73, 231, 0.3);
-  --gold-accent: #d4af37;
-  --gold-light: #f3e5ab;
-  --rose-gold: #b76e79;
+  --primary-color: #F249E7;
+  --primary-light: #FF85EC;
+  --primary-dark: #B31BAA;
+  --primary-glow: rgba(242, 73, 231, 0.4);
   
-  --bg-deep: #fbf9f6; /* Blanco Marfil */
-  --bg-card: rgba(255, 255, 255, 0.65);
-  --bg-card-light: rgba(255, 255, 255, 0.8);
-  --glass-border: rgba(242, 73, 231, 0.4);
-  --glass-glow: 0 10px 40px 0 rgba(242, 73, 231, 0.15);
+  --gold-accent: #CFA451; /* Un dorado más cálido para fondo claro */
+  --gold-light: #8A6822; /* Texto dorado oscurecido para contraste */
+  --rose-gold: #F3BACD;
   
-  --text-main: #2a1b2e;
-  --text-muted: #5e4b63;
-  --text-dark: #000000;
-  --text-light: #ffffff;
+  /* Fondos iluminados, marfil y vidrio esmerilado */
+  --bg-deep: #FCF9FA; 
+  --bg-card: rgba(255, 255, 255, 0.7); 
+  --bg-card-light: rgba(255, 255, 255, 0.85);
+  
+  --glass-border: rgba(242, 73, 231, 0.3);
+  --glass-glow: 0 10px 40px rgba(242, 73, 231, 0.15);
+  
+  /* Texto oscuro para legibilidad */
+  --text-main: #331832;
+  --text-muted: #644B63;
+  --text-dark: #1F0B2B;
 }
 
+/* ==========================================================================
+   SISTEMA DE TRANSICIONES GLOBALES (Efecto Fundido Día/Noche)
+   ========================================================================== */
+h1, h2, h3, h4, p, a, span, button, i, div {
+  transition: color 0.4s ease-in-out, background-color 0.4s ease-in-out, box-shadow 0.4s ease-in-out, border-color 0.4s ease-in-out !important;
+}
+
+/* ==========================================================================
+   ESTILOS BASE DEL CUERPO Y TARJETAS
+   ========================================================================== */
 body {
+  /* Fondo vivo con radial gradients tenues */
   background-color: var(--bg-deep);
-  color: var(--text-main);
   background-image: 
-    radial-gradient(circle at 50% 0%, rgba(242, 73, 231, 0.08) 0%, transparent 60%),
-    linear-gradient(180deg, #fdfbf7 0%, #f4eff5 100%);
+    radial-gradient(circle at 50% 10%, rgba(242, 73, 231, 0.08) 0%, transparent 60%),
+    radial-gradient(circle at 10% 60%, rgba(207, 164, 81, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(242, 73, 231, 0.1) 0%, transparent 50%),
+    linear-gradient(180deg, #FFFFFF 0%, #FAEFF8 50%, #FCF9FA 100%);
 }
 
-.invitation-card, .detail-card, .vip-pass-card, .gift-card, .countdown-box {
+.invitation-card, .detail-card, .gift-card, .countdown-box {
   background: var(--bg-card);
   border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-glow), 0 4px 15px rgba(0, 0, 0, 0.05);
-  backdrop-filter: blur(25px);
+  box-shadow: var(--glass-glow), 0 4px 15px rgba(0,0,0,0.03);
+  backdrop-filter: blur(25px); /* Efecto Glassmorphism Premium */
   -webkit-backdrop-filter: blur(25px);
-  color: var(--text-main);
 }
 
-.detail-card:hover, .vip-pass-card:hover, .gift-card:hover, .countdown-box:hover {
-  background: rgba(242, 73, 231, 0.215);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
-  transform: translateY(-4px);
-  border-color: var(--primary-color);
-  box-shadow: 0 10px 25px rgba(242, 73, 231, 0.15);
-  color: var(--text-light);
-}
-
+/* ==========================================================================
+   AJUSTES DE COLOR Y CONTRASTE PARA TEXTOS
+   ========================================================================== */
 .quinceanera-name {
   color: var(--primary-dark);
-  text-shadow: 0 0 10px rgba(242, 73, 231, 0.4);
-}
-
-.emotional-quote {
-  color: var(--text-muted);
-  font-weight: 500;
+  text-shadow: 0 0 15px rgba(242, 73, 231, 0.3);
 }
 
 .countdown-number {
   color: var(--primary-dark);
-  text-shadow: 0 0 8px rgba(242, 73, 231, 0.3);
+  text-shadow: none;
 }
 
 .detail-title, .gift-title {
-  color: var(--rose-gold);
+  color: var(--primary-dark);
   font-weight: 700;
 }
 
+.vip-guest-name {
+  color: var(--text-dark) !important;
+}
+
+.vip-slot-info {
+  color: var(--text-muted);
+}
+
+/* Elementos internos de las tarjetas de detalles */
+.detail-card .detail-text {
+  color: var(--text-main) !important;
+}
+
+.detail-card .detail-text strong {
+  color: var(--text-dark) !important;
+}
+
+/* ==========================================================================
+   CÓDIGO DE VESTIMENTA (DRESS CODE)
+   ========================================================================== */
 .dress-code-banner {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(242, 73, 231, 0.1) 100%);
-  border: 2px solid var(--primary-color);
+  background: linear-gradient(135deg, rgba(250, 239, 248, 0.9) 0%, rgba(255, 255, 255, 0.9) 100%);
+  border-color: var(--primary-color);
+  box-shadow: 0 8px 30px rgba(242, 73, 231, 0.15);
 }
 
 .dress-code-title {
@@ -81,17 +104,59 @@ body {
 }
 
 .dress-code-warning {
-  color: var(--text-main);
   background: rgba(242, 73, 231, 0.15);
+  color: var(--primary-dark);
   border-color: var(--primary-color);
 }
 
 .dress-code-warning span {
-  color: var(--primary-dark);
-  font-weight: 800;
+  color: var(--text-dark);
 }
 
-.btn-music-toggle {
-  background: rgba(255, 255, 255, 0.8);
-  color: var(--primary-dark);
+/* ==========================================================================
+   OPTIMIZACIÓN DE TARJETAS COMO ENLACES (UX COMPLETA)
+   ========================================================================== */
+
+/* Comportamiento base al pasar el mouse por encima de cualquier tarjeta de detalles */
+.detail-card:hover {
+  box-shadow: 0 12px 30px var(--primary-glow) !important;
+  transform: translateY(-2px);
+}
+
+/* --- Caso A: Sub-Botón de Ubicación (Google Maps) --- */
+.detail-card .detail-btn {
+  display: inline-block;
+  color: var(--text-dark) !important; /* Texto oscuro inicial */
+  border: 1px solid var(--primary-color) !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+/* Reacción del botón de mapas cuando se interactúa con la tarjeta */
+.detail-card:hover .detail-btn {
+  background: var(--primary-color) !important; /* Lila/Rosado vivo */
+  color: #FFFFFF !important; /* Letras blancas para contraste óptimo */
+  box-shadow: 0 6px 20px var(--primary-glow) !important;
+}
+
+/* --- Caso B: Sub-Botón de Calendario (Google Calendar) --- */
+.detail-card .btn-calendar-pass {
+  display: inline-block;
+  color: var(--text-dark) !important; /* Texto oscuro inicial */
+  border: 1px solid var(--primary-color) !important;
+  background: rgba(255, 255, 255, 0.8) !important; /* Cristal de fondo */
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(242, 73, 231, 0.1) !important;
+}
+
+/* Reacción del botón de calendario cuando se interactúa con la tarjeta */
+.detail-card:hover .btn-calendar-pass {
+  background: var(--primary-color) !important; /* Lila/Rosado vivo */
+  color: #FFFFFF !important; /* Letras blancas para contraste óptimo */
+  box-shadow: 0 6px 20px var(--primary-glow) !important;
 }

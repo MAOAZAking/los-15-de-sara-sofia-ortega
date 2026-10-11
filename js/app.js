@@ -7,37 +7,100 @@
  */
 
 document.addEventListener("DOMContentLoaded", async () => {
+  // ==========================================
+  // 1. SISTEMA DE TEMA Y CONTROL DE BOTONES
+  // ==========================================
   const themeToggleBtn = document.getElementById("theme-toggle-btn");
+  const musicToggleBtn = document.getElementById("music-toggle-btn"); 
   const head = document.head;
   const lightThemeLink = document.createElement("link");
   lightThemeLink.rel = "stylesheet";
   lightThemeLink.href = "css/main-light.css";
 
-  // Check persistance
-  if (localStorage.getItem("sara15_theme") === "light") {
-    head.appendChild(lightThemeLink);
-    themeToggleBtn.innerHTML = "☀️";
-    themeToggleBtn.style.background = "rgba(255, 255, 255, 0.85)";
+  // Estado interno para saber si la música está activa o no
+  let musicaActiva = false;
+
+  const currentTheme = localStorage.getItem("sara15_theme");
+  
+  if (currentTheme === null) {
+    localStorage.setItem("sara15_theme", "light");
   }
 
+  function aplicarModoClaro() {
+    head.appendChild(lightThemeLink);
+    themeToggleBtn.innerHTML = "☀️"; // Cambia al Sol
+    themeToggleBtn.style.background = "rgba(255, 255, 255, 0.85)";
+    themeToggleBtn.style.color = "#333";
+    themeToggleBtn.style.boxShadow = "0 0 15px rgba(242, 73, 231, 0.2)";
+    
+    musicToggleBtn.style.background = "rgba(255, 255, 255, 0.85)";
+    musicToggleBtn.style.boxShadow = "0 0 15px rgba(242, 73, 231, 0.2)";
+  }
+
+  function aplicarModoOscuro() {
+    if (head.contains(lightThemeLink)) {
+      head.removeChild(lightThemeLink);
+    }
+    themeToggleBtn.innerHTML = "🌙"; // Cambia a la Luna
+    themeToggleBtn.style.background = "rgba(24, 6, 36, 0.85)";
+    themeToggleBtn.style.color = "#fff";
+    themeToggleBtn.style.boxShadow = "0 0 15px rgba(242, 73, 231, 0.4)";
+    
+    musicToggleBtn.style.background = "rgba(24, 6, 36, 0.85)";
+    musicToggleBtn.style.boxShadow = "0 0 15px rgba(242, 73, 231, 0.4)";
+  }
+
+  // Carga inicial (Por defecto Light)
+  if (localStorage.getItem("sara15_theme") === "light" || currentTheme === null) {
+    aplicarModoClaro();
+  } else {
+    aplicarModoOscuro();
+  }
+
+  // EVENTO 1: Click en el botón de TEMA (Gira solo el botón de tema)
   themeToggleBtn.addEventListener("click", () => {
     themeToggleBtn.style.transform = "rotate(360deg) scale(0.8)";
     
     setTimeout(() => {
       if (localStorage.getItem("sara15_theme") === "light") {
-        head.removeChild(lightThemeLink);
+        aplicarModoOscuro();
         localStorage.setItem("sara15_theme", "dark");
-        themeToggleBtn.innerHTML = "🌙";
-        themeToggleBtn.style.background = "rgba(24, 6, 36, 0.85)";
       } else {
-        head.appendChild(lightThemeLink);
+        aplicarModoClaro();
         localStorage.setItem("sara15_theme", "light");
-        themeToggleBtn.innerHTML = "☀️";
-        themeToggleBtn.style.background = "rgba(255, 255, 255, 0.85)";
       }
       themeToggleBtn.style.transform = "rotate(0deg) scale(1)";
+    }, 200); 
+  });
+
+  // EVENTO 2: Click en el botón de MÚSICA (Gira e intercambia el emoji de la música)
+  musicToggleBtn.addEventListener("click", () => {
+    // Hace el efecto de giro únicamente al botón de música
+    musicToggleBtn.style.transform = "rotate(360deg) scale(0.8)";
+    
+    setTimeout(() => {
+      if (!musicaActiva) {
+        // Si estaba silenciado, pasa a sonar
+        musicToggleBtn.innerHTML = "🎵";
+        musicToggleBtn.title = "Pausar música";
+        musicaActiva = true;
+        
+        // 🎵 AQUÍ PUEDES AGREGAR TU LÍNEA PARA REPRODUCIR EL AUDIO (ej: miAudio.play())
+      } else {
+        // Si estaba sonando, pasa a silenciado
+        musicToggleBtn.innerHTML = "🔇";
+        musicToggleBtn.title = "Activar música";
+        musicaActiva = false;
+        
+        // 🔇 AQUÍ PUEDES AGREGAR TU LÍNEA PARA PAUSAR EL AUDIO (ej: miAudio.pause())
+      }
+      musicToggleBtn.style.transform = "rotate(0deg) scale(1)";
     }, 200);
   });
+
+  // ==========================================
+  // 2. CONFIGURACIONES Y ELEMENTOS DEL DOM
+  // ==========================================
   const config = window.APP_CONFIG;
   const dbService = window.dbService;
 
@@ -437,7 +500,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       </div>
       <div class="companion-field">
         <label class="form-label">Número de Documento</label>
-        <input type="text" inputmode="numeric" class="companion-input comp-doc" placeholder="Solo dígitos numéricos" required>
+        <input type="text" inputmode="numeric" class="companion-input comp-doc" placeholder="Si tu documento es alfa-numérico, por favor solo ingresa los números" required>
       </div>
       <div class="companion-field">
         <label class="form-label">Correo Electrónico (o del tutor si es menor)</label>

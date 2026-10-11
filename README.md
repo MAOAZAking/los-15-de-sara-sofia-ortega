@@ -36,4 +36,4 @@ Este sistema desafía los límites del alojamiento estático al convertir **GitH
 * **Confeti Digital:** Micro-interacción de celebración proyectada en pantalla durante 3 segundos al confirmar un ingreso válido, antes de rearmar la cámara automáticamente.
 
 ---
-*Desarrollado para crear una experiencia inolvidable. Diciembre 2026.*
+*Desarrollado por MAOAZA_king hermano de la cumpleañera para crear una experiencia inolvidable. Para los 15 de Sara Sofía el 20 de  Diciembre 2026.*

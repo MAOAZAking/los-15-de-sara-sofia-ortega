@@ -26,17 +26,20 @@
   <canvas id="stars-canvas"></canvas>
 
   <!-- Botón de música de fondo (Vals) -->
-  <div class="audio-controller">
-    <button type="button" class="btn-music-toggle" id="music-toggle-btn" title="Activar/Pausar música">
-      🎵
+  <div class="audio-controller" style="position: fixed; top: 20px; right: 20px; z-index: 999;">
+    <button type="button" class="btn-music-toggle" id="music-toggle-btn" title="Activar música" style="border: 1px solid #F249E7; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); backdrop-filter: blur(10px);">
+      🔇
     </button>
   </div>
 
+  <!-- Botón de cambio de tema -->
   <div class="theme-controller" style="position: fixed; top: 80px; right: 20px; z-index: 999;">
-    <button id="theme-toggle-btn" style="background: rgba(24, 6, 36, 0.85); border: 1px solid #F249E7; color: #fff; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; box-shadow: 0 0 15px rgba(242, 73, 231, 0.4); transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); backdrop-filter: blur(10px);">
-      🌙
+    <button id="theme-toggle-btn" style="border: 1px solid #F249E7; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); backdrop-filter: blur(10px);">
+      ☀️
     </button>
   </div>
+
+
 
   <div class="content-wrapper">
 
@@ -74,36 +77,47 @@
 
       <!-- Tarjetas de Información: Fecha, Lugar, Calendario -->
       <div class="details-grid">
-        <!-- Fecha y Hora -->
-        <div class="detail-card">
+        <!-- Fecha y Hora (Toda la tarjeta agenda el evento) -->
+        <a href="https://calendar.google.com/calendar/event?action=TEMPLATE&amp;tmeid=MmVrbnRqNjMxZ201a3RpcGNvMnExamJ2YnEgbWFvYXphMTM1NzlAbQ&amp;tmsrc=maoaza13579%40gmail.com" 
+          target="_blank" 
+          class="detail-card" 
+          style="text-decoration: none; display: block;">
+          
           <span class="detail-icon">📅</span>
           <h3 class="detail-title">Fecha y Hora</h3>
           <p class="detail-text">
             <strong>Domingo, 20 de Diciembre de 2026</strong><br>
             Recepción a partir de las <strong>7:00 PM</strong>.
           </p>
+          
           <div style="margin-top: 15px;">
-            <!-- Botón oficial de inserción de Google Calendar -->
-            <a target="_blank" href="https://calendar.google.com/calendar/event?action=TEMPLATE&amp;tmeid=MmVrbnRqNjMxZ201a3RpcGNvMnExamJ2YnEgbWFvYXphMTM1NzlAbQ&amp;tmsrc=maoaza13579%40gmail.com">
-              <img border="0" src="assets/images/google_calendar_button.gif" alt="Google Calendar" style="vertical-align: middle;">
-            </a>
+            <!-- Reemplazamos el .gif por un botón CSS Premium adaptable -->
+            <span class="btn-calendar-pass">
+              📅 Agendar en Google Calendar
+            </span>
           </div>
-        </div>
+        </a>
 
-        <!-- Lugar y Ruta -->
-        <div class="detail-card">
+
+        <!-- Lugar y Ruta (Toda la tarjeta es el enlace) -->
+        <a href="https://www.google.com/maps/dir//Cra.+23+%2356-50,+Comuna+8,+Cali,+Valle+del+Cauca/@3.4417114,-76.4965274,17z/data=!4m18!1m8!3m7!1s0x8e30a70733ebf565:0xc9f09c63545da21c!2sCra.+23+%2356-50,+Comuna+8,+Cali,+Valle+del+Cauca!3b1!8m2!3d3.4415515!4d-76.4965047!16s%2Fg%2F11vjm1vyjl!4m8!1m0!1m5!1m1!1s0x8e30a70733ebf565:0xc9f09c63545da21c!2m2!1d-76.4965047!2d3.4415515!3e0?entry=ttu" 
+          target="_blank" 
+          class="detail-card" 
+          style="text-decoration: none; display: block;">
+          
           <span class="detail-icon">📍</span>
           <h3 class="detail-title">Lugar del Evento</h3>
           <p class="detail-text">
             <strong>Cra. 23 # 56-50</strong><br>
             Comuna 8, Cali, Valle del Cauca.
           </p>
-          <a href="https://www.google.com/maps/dir//Cra.+23+%2356-50,+Comuna+8,+Cali,+Valle+del+Cauca/@3.4417114,-76.4965274,17z/data=!4m18!1m8!3m7!1s0x8e30a70733ebf565:0xc9f09c63545da21c!2sCra.+23+%2356-50,+Comuna+8,+Cali,+Valle+del+Cauca!3b1!8m2!3d3.4415515!4d-76.4965047!16s%2Fg%2F11vjm1vyjl!4m8!1m0!1m5!1m1!1s0x8e30a70733ebf565:0xc9f09c63545da21c!2m2!1d-76.4965047!2d3.4415515!3e0?entry=ttu" 
-             target="_blank" 
-             class="detail-btn">
+          
+          <!-- Cambiado a span para evitar enlaces anidados -->
+          <span class="detail-btn">
             🚗 Cómo Llegar (Google Maps)
-          </a>
-        </div>
+          </span>
+        </a>
+
       </div>
 
       <!-- Banner de Dress Code con Alerta del Color Morado Reservado -->
@@ -257,7 +271,7 @@
 
         <!-- Botón de Envío -->
         <button type="submit" class="btn-submit-registration" id="btn-submit-registration" disabled>
-          Confirmar mi Asistencia 🎉
+          🎉Confirmar mi Asistencia🎉
         </button>
 
         <p class="calendar-consent-note">
