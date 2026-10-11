@@ -11,7 +11,7 @@
       const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
       
       // Hash SHA-256 de "sara15_vip_access" (Debes cambiarlo por tu propio secreto)
-      const validHash = 'c7e841fa5a77dbdfc22e4347714856f71d1880492e85ab82dfb66ff64121bf66';
+      const validHash = '0b92e41c578a1b4100a3b74aefb5d96d857d79814853fc0cad9b3268784870a9';
       
       const encoder = new TextEncoder();
       const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(token));
