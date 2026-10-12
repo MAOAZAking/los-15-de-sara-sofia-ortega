@@ -25,18 +25,19 @@
   <!-- Canvas animado de estrellas y partículas -->
   <canvas id="stars-canvas"></canvas>
 
-  <!-- Botón de música de fondo (Vals) -->
-  <div class="audio-controller" style="position: fixed; top: 20px; right: 20px; z-index: 999;">
-    <button type="button" class="btn-music-toggle" id="music-toggle-btn" title="Activar música" style="border: 1px solid #F249E7; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); backdrop-filter: blur(10px);">
+  <!-- Panel de Controladores Flotantes (Esquina Superior Derecha) -->
+  <div class="floating-controls" style="position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 12px;">
+    
+    <!-- Botón de música de fondo (Vals) -->
+    <button type="button" class="btn-music-toggle" id="music-toggle-btn" title="Activar música" style="border: 1px solid #F249E7; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); backdrop-filter: blur(10px); background: rgba(255,255,255,0.2);">
       🔇
     </button>
-  </div>
 
-  <!-- Botón de cambio de tema -->
-  <div class="theme-controller" style="position: fixed; top: 80px; right: 20px; z-index: 999;">
-    <button id="theme-toggle-btn" style="border: 1px solid #F249E7; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); backdrop-filter: blur(10px);">
+    <!-- Botón de cambio de tema (Con rotación nativa integrada) -->
+    <button type="button" id="theme-toggle-btn" title="Cambiar tema" style="border: 1px solid #F249E7; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), background 0.4s; backdrop-filter: blur(10px); background: rgba(255,255,255,0.2);">
       ☀️
     </button>
+    
   </div>
 
 
@@ -289,6 +290,7 @@
   <script src="assets/vendor/qrcode.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/db-service.js"></script>
+  <script src="js/theme-music.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

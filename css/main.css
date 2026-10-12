@@ -2,6 +2,14 @@
    LOS 15 DE SARA SOFÍA ORTEGA AYALA - ESTILOS PRINCIPALES
    Color Principal: RGB(242, 73, 231) (#F249E7)
    ========================================================================== */
+/* ASEGÚRATE DE QUE ESTO ESTÉ AL INICIO DE TU MAIN.CSS (MODO OSCURO) */
+html, body, h1, h2, h3, h4, p, a, span, button, i, div, section, label, input {
+  transition: color 0.4s ease-in-out, 
+              background-color 0.4s ease-in-out, 
+              box-shadow 0.4s ease-in-out, 
+              border-color 0.4s ease-in-out,
+              transform 0.4s ease-in-out;
+}
 
 :root {
   --primary-rgb: 242, 73, 231;

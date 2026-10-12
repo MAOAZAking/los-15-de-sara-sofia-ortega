@@ -2,6 +2,9 @@
    LOS 15 DE SARA SOFÍA - PREMIUM LIGHT THEME (main-light.css)
    Reescribe las variables CSS principales del root
    ========================================================================== */
+/* ==========================================================================
+   LOS 15 DE SARA SOFÍA - MODO PREMIUM LIGHT V2
+   ========================================================================== */
 :root {
   --primary-rgb: 242, 73, 231;
   --primary-color: #F249E7;
@@ -9,50 +12,72 @@
   --primary-dark: #B31BAA;
   --primary-glow: rgba(242, 73, 231, 0.4);
   
-  --gold-accent: #CFA451; /* Un dorado más cálido para fondo claro */
-  --gold-light: #8A6822; /* Texto dorado oscurecido para contraste */
+  --gold-accent: #CFA451; 
+  --gold-light: #8A6822; 
   --rose-gold: #F3BACD;
   
-  /* Fondos iluminados, marfil y vidrio esmerilado */
-  --bg-deep: #FCF9FA; 
+  /* Fondos iluminados, marfil premium y efecto vidrio esmerilado */
+  --bg-deep: #FDFBF7; 
   --bg-card: rgba(255, 255, 255, 0.7); 
   --bg-card-light: rgba(255, 255, 255, 0.85);
   
-  --glass-border: rgba(242, 73, 231, 0.3);
-  --glass-glow: 0 10px 40px rgba(242, 73, 231, 0.15);
+  --glass-border: rgba(242, 73, 231, 0.25);
+  --glass-glow: 0 10px 40px rgba(242, 73, 231, 0.12);
   
-  /* Texto oscuro para legibilidad */
+  /* Paleta de textos con contraste garantizado */
   --text-main: #331832;
   --text-muted: #644B63;
   --text-dark: #1F0B2B;
 }
 
 /* ==========================================================================
-   SISTEMA DE TRANSICIONES GLOBALES (Efecto Fundido Día/Noche)
+   SISTEMA DE TRANSICIONES GLOBALES (Solución del efecto brusco Claro -> Oscuro)
    ========================================================================== */
-h1, h2, h3, h4, p, a, span, button, i, div {
-  transition: color 0.4s ease-in-out, background-color 0.4s ease-in-out, box-shadow 0.4s ease-in-out, border-color 0.4s ease-in-out !important;
+html, body, h1, h2, h3, h4, p, a, span, button, i, div, section, label, input {
+  /* Forzamos la suavidad de transición en ambos sentidos de la carga */
+  transition: color 0.4s ease-in-out, 
+              background-color 0.4s ease-in-out, 
+              box-shadow 0.4s ease-in-out, 
+              border-color 0.4s ease-in-out,
+              transform 0.4s ease-in-out;
+}
+
+/* 
+   Técnica del ciclo de vida del DOM:
+   Cuando el JavaScript remueva este archivo, los elementos mantendrán en su memoria 
+   de renderizado (Computed Styles) los últimos valores claros durante una fracción 
+   de segundo, forzando a que la hoja 'main.css' original haga el desvanecimiento.
+*/
+:root {
+  color-scheme: light;
 }
 
 /* ==========================================================================
-   ESTILOS BASE DEL CUERPO Y TARJETAS
+   ESTILOS BASE DEL CUERPO Y CONTENEDORES GLASSMORPHISM
    ========================================================================== */
 body {
-  /* Fondo vivo con radial gradients tenues */
   background-color: var(--bg-deep);
   background-image: 
     radial-gradient(circle at 50% 10%, rgba(242, 73, 231, 0.08) 0%, transparent 60%),
-    radial-gradient(circle at 10% 60%, rgba(207, 164, 81, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(242, 73, 231, 0.1) 0%, transparent 50%),
-    linear-gradient(180deg, #FFFFFF 0%, #FAEFF8 50%, #FCF9FA 100%);
+    radial-gradient(circle at 10% 60%, rgba(207, 164, 81, 0.07) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(242, 73, 231, 0.09) 0%, transparent 50%),
+    linear-gradient(180deg, #FFFFFF 0%, #FAEFF8 50%, #FDFBF7 100%);
+  min-height: 100vh;
 }
 
-.invitation-card, .detail-card, .gift-card, .countdown-box {
+/* Unificado: Se añade compatibilidad explícita para la tarjeta VIP PASS */
+.invitation-card, 
+.detail-card, 
+.gift-card, 
+.vip-pass-card, 
+.countdown-box,
+.login-card-overlay {
   background: var(--bg-card);
   border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-glow), 0 4px 15px rgba(0,0,0,0.03);
-  backdrop-filter: blur(25px); /* Efecto Glassmorphism Premium */
+  box-shadow: var(--glass-glow), 0 4px 15px rgba(0, 0, 0, 0.02);
+  backdrop-filter: blur(25px);
   -webkit-backdrop-filter: blur(25px);
+  border-radius: 16px; /* Bordes suaves premium universales */
 }
 
 /* ==========================================================================
@@ -60,28 +85,26 @@ body {
    ========================================================================== */
 .quinceanera-name {
   color: var(--primary-dark);
-  text-shadow: 0 0 15px rgba(242, 73, 231, 0.3);
+  text-shadow: 0 0 15px rgba(242, 73, 231, 0.2);
 }
 
-.countdown-number {
+.countdown-number, 
+.detail-title, 
+.gift-title {
   color: var(--primary-dark);
   text-shadow: none;
 }
 
-.detail-title, .gift-title {
-  color: var(--primary-dark);
-  font-weight: 700;
-}
-
+/* Corrección de usabilidad: Asegura lectura óptima en nombres largos de invitados */
 .vip-guest-name {
   color: var(--text-dark) !important;
+  font-weight: 600;
 }
 
 .vip-slot-info {
   color: var(--text-muted);
 }
 
-/* Elementos internos de las tarjetas de detalles */
 .detail-card .detail-text {
   color: var(--text-main) !important;
 }
@@ -95,8 +118,8 @@ body {
    ========================================================================== */
 .dress-code-banner {
   background: linear-gradient(135deg, rgba(250, 239, 248, 0.9) 0%, rgba(255, 255, 255, 0.9) 100%);
-  border-color: var(--primary-color);
-  box-shadow: 0 8px 30px rgba(242, 73, 231, 0.15);
+  border: 1px solid var(--primary-color);
+  box-shadow: 0 8px 30px rgba(242, 73, 231, 0.12);
 }
 
 .dress-code-title {
@@ -104,13 +127,22 @@ body {
 }
 
 .dress-code-warning {
-  background: rgba(242, 73, 231, 0.15);
+  font-size: 16px;
+  font-weight: 700;
   color: var(--primary-dark);
-  border-color: var(--primary-color);
+  background: rgba(242, 73, 231, 0.12);
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 30px;
+  margin-top: 10px;
+  border: 1px dashed var(--primary-color);
+  letter-spacing: 0.5px;
 }
 
 .dress-code-warning span {
   color: var(--text-dark);
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 /* ==========================================================================

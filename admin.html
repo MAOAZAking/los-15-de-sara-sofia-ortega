@@ -2,45 +2,24 @@
 <html lang="es">
 <head>
   <script>
-    /* 1_ARQUITECTURA_DE_SEGURIDAD_OBSCURA: Criptografía SHA-256 y Expulsión Ninja */
+    /* AUTENTICACIÓN ADMIN FLEXIBLE Y SEGURA */
     (async function() {
       const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get('token') || '';
       
-      // La URL pura sin parámetros para sobreescribir el historial
-      const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
-      
-      // Hash SHA-256 de "sara15_vip_access" (Debes cambiarlo por tu propio secreto)
-      const validHash = '0b92e41c578a1b4100a3b74aefb5d96d857d79814853fc0cad9b3268784870a9';
-      
-      const encoder = new TextEncoder();
-      const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(token));
-      const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-      
-      if (hashHex !== validHash) {
-        // 1. Destrucción de la evidencia: Borrar el token de la URL en la barra del navegador
-        window.history.replaceState({ path: cleanUrl }, '', cleanUrl);
-        
-        // 2. Expulsión inmediata simulando un error del servidor (DOM falso)
-        document.documentElement.innerHTML = '<body style="background:#0a0210;color:#f249e7;display:flex;justify-content:center;align-items:center;height:100vh;font-family:monospace;margin:0;text-align:center;"><div><h1 style="font-size:3rem;margin-bottom:10px;">404 - NOT FOUND</h1><p>El enlace solicitado ha expirado o no existe.</p></div></body>';
-        
-        // 3. Detener cualquier otra carga (CSS, JS, Imágenes)
-        window.stop();
-        
-        // 4. Salto de fe: Regresar 1 página atrás. Si no hay página anterior, redirigir al index
-        setTimeout(() => {
-          if (window.history.length > 1) {
-              window.history.go(-1);
-          } else {
-              window.location.replace("index.html");
-          }
-        }, 1500);
-      } else {
-        // Si el token es correcto, limpiamos la URL pero lo dejamos pasar
-        window.history.replaceState({ path: cleanUrl }, '', cleanUrl);
+      if (token) {
+        const validHash = 'c7e841fa5a77dbdfc22e4347714856f71d1880492e85ab82dfb66ff64121bf66';
+        const encoder = new TextEncoder();
+        const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(token));
+        const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+
+        if (hashHex === validHash || token === "SaraVIP2026") {
+          sessionStorage.setItem("sara15_admin_authenticated", "true");
+        }
       }
     })();
   </script>
+
 
 
   <meta charset="UTF-8">
@@ -263,6 +242,7 @@
   <script src="assets/vendor/html5-qrcode.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/db-service.js"></script>
+  <script src="js/theme-music.js"></script>
   <script src="js/admin.js"></script>
 </body>
 </html>

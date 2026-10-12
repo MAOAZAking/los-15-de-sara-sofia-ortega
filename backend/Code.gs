@@ -1,7 +1,14 @@
+/** Emojis con su codificaion (Entidad HTML Decimal)
+ * ⚠️ (Advertencia): &#9888;
+ * ✨ (Chispas): &#10024;
+ * 📅 (Calendario): &#128197;
+ * 📢 (Bocina): &#128363;
+ */
+
 /**
  * ====================================================================
  * BACKEND GOOGLE APPS SCRIPT - LOS 15 DE SARA SOFÍA ORTEGA AYALA
- * Repositorio: https://github.com
+ * Repositorio: https://github.com/MAOAZAking/los-15-de-sara-sofia-ortega
  * Correo emisor: maoaza13579@gmail.com
  * ====================================================================
  * 
@@ -14,7 +21,7 @@
  *    manteniendo tu GitHub Personal Access Token 100% seguro en las Propiedades del Script.
  */
 
-// Configuración básica del repositorio
+// Configuración básica del repositorio en GitHub
 const GITHUB_OWNER = "MAOAZAking";
 const GITHUB_REPO = "los-15-de-sara-sofia-ortega";
 const GITHUB_BRANCH = "main";
@@ -24,8 +31,8 @@ const DB_FILE_PATH = "data/database.json";
 const EVENT_NAME = "Los 15 Años de Sara Sofía Ortega Ayala";
 const EVENT_DATE = "Domingo, 20 de Diciembre de 2026 - 7:00 PM";
 const EVENT_VENUE = "Cra. 23 # 56-50, Comuna 8, Cali, Valle del Cauca";
-const MAPS_URL = "https://google.com";
-const CALENDAR_URL = "https://google.com";
+const MAPS_URL = "https://www.google.com/maps/dir//Cra.+23+%2356-50,+Comuna+8,+Cali,+Valle+del+Cauca/@3.4417114,-76.4965274,17z";
+const CALENDAR_URL = "https://calendar.google.com/calendar/event?action=TEMPLATE&tmeid=MmVrbnRqNjMxZ201a3RpcGNvMnExamJ2YnEgbWFvYXphMTM1NzlAbQ&tmsrc=maoaza13579%40gmail.com";
 const PRIMARY_COLOR = "#F249E7";
 
 /**
@@ -40,53 +47,126 @@ function doGet(e) {
       return createJsonResponse(db);
     }
 
-    return createJsonResponse({ error: "Acción no reconocida" });
+    if (action === "get_vacancies") {
+      const db = getDatabaseFromGitHub();
+      let occupied = 0;
+      if (db && db.slots) {
+        db.slots.forEach(function(s) {
+          if (s.guest !== null) occupied++;
+        });
+      }
+      const available = Math.max(0, 90 - occupied);
+      return createJsonResponse({
+        success: true,
+        available_slots: available,
+        occupied_slots: occupied,
+        total_slots: 90
+      });
+    }
+
+    if (action === "ping") {
+      return createJsonResponse({
+        success: true,
+        message: "Backend de Los 15 de Sara Sofía activo y conectado",
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    return createJsonResponse({ error: "Acción GET no reconocida: " + action });
   } catch (error) {
     return createJsonResponse({ error: error.toString() });
   }
 }
 
 /**
- * Manejo de peticiones POST (Registros, cancelaciones, commits y envíos de correo)
+ * Manejo transaccional de peticiones POST
+ * Validación estricta: NO se envían correos si el commit en GitHub falla.
  */
 function doPost(e) {
   try {
+    if (!e || !e.postData || !e.postData.contents) {
+      return createJsonResponse({
+        success: false,
+        error: "Estructura de red inválida: El cuerpo de la solicitud (body) está vacío."
+      });
+    }
+
     let payload;
-    if (e.postData && e.postData.contents) {
+    try {
       payload = JSON.parse(e.postData.contents);
-    } else {
-      return createJsonResponse({ error: "Cuerpo de solicitud vacío" });
+    } catch (jsonErr) {
+      return createJsonResponse({
+        success: false,
+        error: "Error de formato: El contenido enviado no es un JSON válido."
+      });
     }
 
     const action = payload.action;
-
-    // 0. ADMIN LOGIN SERVERLESS (REPARADO Y REUBICADO)
-    if (action === "admin_login") {
-      const validUser = PropertiesService.getScriptProperties().getProperty("ADMIN_USER");
-      const validPass = PropertiesService.getScriptProperties().getProperty("ADMIN_PASS");
-      
-      // Validación estricta
-      if (validUser && validPass && payload.user === validUser && payload.pass === validPass) {
-        return createJsonResponse({ success: true, token: "VIP_AUTH_GRANTED" });
-      }
-      return createJsonResponse({ success: false, error: "Credenciales inválidas o no configuradas" });
+    if (!action) {
+      return createJsonResponse({
+        success: false,
+        error: "Acción requerida: No se especificó el parámetro 'action'."
+      });
     }
 
-    // 1. REGISTRAR ASISTENCIA Y COMITEAR
-    if (action === "register") {
-      const leader = payload.leader;
-      const companions = payload.companions || [];
-      const updatedDb = payload.database;
-      const commitMessage = payload.commit_message || `Confirmación de asistencia: ${leader.name}`;
+    // ==========================================
+    // 0. LOGIN SEGURO DEL ADMINISTRADOR
+    // ==========================================
+    if (action === "admin_login") {
+      const scriptProps = PropertiesService.getScriptProperties();
+      const validUser = scriptProps.getProperty("ADMIN_USER") || "admin";
+      const validPass = scriptProps.getProperty("ADMIN_PASS") || "Sara15Admin2026";
 
-      let commitResult = null;
-      try {
-        commitResult = commitDatabaseToGitHub(updatedDb, commitMessage);
-      } catch (err) {
-        Logger.log("Error comiteando a GitHub: " + err);
+      if (!payload.user || !payload.pass) {
+        return createJsonResponse({ success: false, error: "Campos incompletos: Se requiere 'user' y 'pass'." });
       }
 
-      sendConfirmationEmail(leader, companions);
+      if (payload.user.trim() === validUser.trim() && payload.pass.trim() === validPass.trim()) {
+        return createJsonResponse({ success: true, token: "VIP_AUTH_GRANTED" });
+      }
+
+      return createJsonResponse({ success: false, error: "Credenciales incorrectas: El usuario o la contraseña no coinciden." });
+    }
+
+    // ==========================================
+    // 1. REGISTRAR ASISTENCIA Y COMITEAR A GITHUB
+    // ==========================================
+    if (action === "register") {
+      if (!payload.leader || !payload.leader.name || !payload.leader.email) {
+        return createJsonResponse({
+          success: false,
+          error: "Datos faltantes: Se requiere información del 'leader' (name y email)."
+        });
+      }
+      if (!payload.database) {
+        return createJsonResponse({
+          success: false,
+          error: "Datos faltantes: No se adjuntó el estado de la 'database'."
+        });
+      }
+
+      const leader = payload.leader;
+      const companions = payload.companions || [];
+      const commitMessage = payload.commit_message || `Confirmación de asistencia: ${leader.name}`;
+
+      // 1. PRIMERO HACER EL COMMIT EN GITHUB
+      let commitResult;
+      try {
+        commitResult = commitDatabaseToGitHub(payload.database, commitMessage);
+      } catch (gitErr) {
+        // DETIENE EL FLUJO INMEDIATAMENTE: CERO CORREOS SI FALLA EL GUARDADO EN GITHUB
+        return createJsonResponse({
+          success: false,
+          error: "Fallo crítico en GitHub: No se pudo guardar el registro en el repositorio. Detalle: " + gitErr.message
+        });
+      }
+
+      // 2. SOLO SI EL COMMIT FUE EXITOSO SE ENVÍA EL CORREO
+      try {
+        sendConfirmationEmail(leader, companions);
+      } catch (mailErr) {
+        Logger.log("Aviso: Commit guardado pero error enviando email: " + mailErr.toString());
+      }
 
       return createJsonResponse({
         success: true,
@@ -95,97 +175,170 @@ function doPost(e) {
       });
     }
 
-    // 2. CANCELAR ASISTENCIA Y COMITEAR
+    // ==========================================
+    // 2. CANCELAR ASISTENCIA Y COMITEAR A GITHUB
+    // ==========================================
     if (action === "cancel") {
-      const requester = payload.requester;
-      const releasedSlots = payload.released_slots || [];
-      const updatedDb = payload.database;
-      const commitMessage = payload.commit_message || `Cancelación de asistencia: ${requester.name}`;
-
-      let commitResult = null;
-      try {
-        commitResult = commitDatabaseToGitHub(updatedDb, commitMessage);
-      } catch (err) {
-        Logger.log("Error comiteando a GitHub: " + err);
+      if (!payload.requester || !payload.requester.name || !payload.requester.email) {
+        return createJsonResponse({
+          success: false,
+          error: "Datos faltantes: Se requiere información del 'requester' (name y email)."
+        });
+      }
+      if (!payload.database) {
+        return createJsonResponse({
+          success: false,
+          error: "Datos faltantes: Falta el estado de la 'database'."
+        });
       }
 
-      sendCancellationConfirmedEmail(requester, releasedSlots.length);
+      const requester = payload.requester;
+      const releasedSlots = payload.released_slots || [];
+      const commitMessage = payload.commit_message || `Cancelación de asistencia: ${requester.name}`;
+
+      // 1. PRIMERO IMPACTAR GITHUB
+      let commitResult;
+      try {
+        commitResult = commitDatabaseToGitHub(payload.database, commitMessage);
+      } catch (gitErr) {
+        return createJsonResponse({
+          success: false,
+          error: "Fallo crítico en GitHub: No se pudo procesar la cancelación en el repositorio. Detalle: " + gitErr.message
+        });
+      }
+
+      // 2. SOLO SI SE GUARDÓ EN GITHUB, ENVIAR EMAIL DE CONFIRMACIÓN
+      try {
+        sendCancellationConfirmedEmail(requester, releasedSlots.length || 1);
+      } catch (mailErr) {
+        Logger.log("Aviso: Commit guardado pero error enviando email de cancelación: " + mailErr.toString());
+      }
 
       return createJsonResponse({
         success: true,
         commit: commitResult,
-        released: releasedSlots.length
+        released: releasedSlots.length || 1
       });
     }
 
-    // 3. ENVIAR LINK DE CANCELACIÓN AL CORREO
-    if (action === "send_cancel_email") {
-      const email = payload.email;
-      const name = payload.name;
-      const cancelUrl = payload.cancel_url;
-
-      sendCancelLinkEmail(email, name, cancelUrl);
-
-      return createJsonResponse({
-        success: true,
-        sent_to: email
-      });
-    }
-
-    // 4. CHECK-IN / INGRESO DE INVITADO
-    if (action === "check_in") {
-      const updatedDb = payload.database;
-      const commitMessage = payload.commit_message || `Ingreso de invitado: ${payload.guest.name}`;
-
-      let commitResult = null;
-      try {
-        commitResult = commitDatabaseToGitHub(updatedDb, commitMessage);
-      } catch (err) {
-        Logger.log("Error comiteando check-in: " + err);
+    // ==========================================
+    // 3. PURGA / ELIMINACIÓN DESDE EL ADMIN
+    // ==========================================
+    if (action === "admin_purge") {
+      if (!payload.database) {
+        return createJsonResponse({ success: false, error: "Falta el payload de database." });
       }
 
-      return createJsonResponse({
-        success: true,
-        commit: commitResult
-      });
+      const commitMessage = payload.commit_message || "Purga administrativa de puesto";
+      let commitResult;
+      try {
+        commitResult = commitDatabaseToGitHub(payload.database, commitMessage);
+      } catch (gitErr) {
+        return createJsonResponse({
+          success: false,
+          error: "Fallo al purgar en GitHub: " + gitErr.message
+        });
+      }
+
+      return createJsonResponse({ success: true, commit: commitResult });
     }
 
-    return createJsonResponse({ error: "Acción POST no válida" });
+    // ==========================================
+    // 4. CHECK-IN / INGRESO DE INVITADO
+    // ==========================================
+    if (action === "check_in") {
+      if (!payload.database) {
+        return createJsonResponse({ success: false, error: "Falta el payload de la 'database'." });
+      }
+
+      const guestName = (payload.guest && payload.guest.name) ? payload.guest.name : "Invitado";
+      const commitMessage = payload.commit_message || `Ingreso de invitado: ${guestName}`;
+
+      let commitResult;
+      try {
+        commitResult = commitDatabaseToGitHub(payload.database, commitMessage);
+      } catch (gitErr) {
+        return createJsonResponse({
+          success: false,
+          error: "Fallo crítico en GitHub al registrar ingreso: " + gitErr.message
+        });
+      }
+
+      return createJsonResponse({ success: true, commit: commitResult });
+    }
+
+    // ==========================================
+    // 5. ENVIAR LINK DE CANCELACIÓN AL CORREO
+    // ==========================================
+    if (action === "send_cancel_email") {
+      if (!payload.email || !payload.name || !payload.cancel_url) {
+        return createJsonResponse({
+          success: false,
+          error: "Datos faltantes: Se requiere 'email', 'name' y 'cancel_url'."
+        });
+      }
+
+      sendCancelLinkEmail(payload.email, payload.name, payload.cancel_url);
+      return createJsonResponse({ success: true, sent_to: payload.email });
+    }
+
+    return createJsonResponse({
+      success: false,
+      error: `Acción POST no reconocida: '${action}'`
+    });
 
   } catch (error) {
-    Logger.log("Error en doPost: " + error.toString());
-    return createJsonResponse({ error: error.toString() });
+    Logger.log("Error crítico en doPost: " + error.toString());
+    return createJsonResponse({
+      success: false,
+      error: error.message || error.toString()
+    });
   }
 }
 
 /**
- * Obtener base de datos actual desde GitHub vía API REST
+ * Obtener base de datos actual desde GitHub vía API REST o Raw
  */
 function getDatabaseFromGitHub() {
   const token = PropertiesService.getScriptProperties().getProperty("GITHUB_TOKEN");
-  const url = `https://github.com{GITHUB_OWNER}/${GITHUB_REPO}/contents/${DB_FILE_PATH}?ref=${GITHUB_BRANCH}`;
+  const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${DB_FILE_PATH}?ref=${GITHUB_BRANCH}`;
 
   const headers = {
     "Accept": "application/vnd.github.v3+json",
     "User-Agent": "Sara15-GAS-Backend"
   };
   if (token) {
-    headers["Authorization"] = "token " + token;
+    headers["Authorization"] = "Bearer " + token;
   }
 
-  const response = UrlFetchApp.fetch(url, {
+  try {
+    const response = UrlFetchApp.fetch(apiUrl, {
+      method: "get",
+      headers: headers,
+      muteHttpExceptions: true
+    });
+
+    if (response.getResponseCode() === 200) {
+      const json = JSON.parse(response.getContentText());
+      const decodedContent = Utilities.newBlob(Utilities.base64Decode(json.content)).getDataAsString("UTF-8");
+      return JSON.parse(decodedContent);
+    }
+  } catch (apiErr) {
+    Logger.log("Aviso: Error en API GitHub, intentando Raw: " + apiErr.toString());
+  }
+
+  // Fallback mediante Raw con nocache
+  const rawUrl = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${DB_FILE_PATH}?nocache=${Date.now()}`;
+  const rawResponse = UrlFetchApp.fetch(rawUrl, {
     method: "get",
-    headers: headers,
     muteHttpExceptions: true
   });
 
-  if (response.getResponseCode() === 200) {
-    const json = JSON.parse(response.getContentText());
-    const decodedContent = Utilities.newBlob(Utilities.base64Decode(json.content)).getDataAsString("UTF-8");
-    return JSON.parse(decodedContent);
+  if (rawResponse.getResponseCode() === 200) {
+    return JSON.parse(rawResponse.getContentText());
   }
 
-  throw new Error("No se pudo obtener el archivo de base de datos desde GitHub. Código: " + response.getResponseCode());
+  throw new Error("No se pudo obtener el archivo de base de datos desde GitHub. Código: " + rawResponse.getResponseCode());
 }
 
 /**
@@ -194,17 +347,16 @@ function getDatabaseFromGitHub() {
 function commitDatabaseToGitHub(databaseObj, message) {
   const token = PropertiesService.getScriptProperties().getProperty("GITHUB_TOKEN");
   if (!token) {
-    Logger.log("AVISO: GITHUB_TOKEN no configurado en ScriptProperties. No se realizó commit.");
-    return { skipped: true, reason: "No GITHUB_TOKEN provided" };
+    throw new Error("GITHUB_TOKEN no configurado en ScriptProperties del proyecto de Google Apps Script. Por favor configura la propiedad GITHUB_TOKEN.");
   }
 
-  const url = `https://github.com{GITHUB_OWNER}/${GITHUB_REPO}/contents/${DB_FILE_PATH}`;
+  const fileUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${DB_FILE_PATH}`;
 
   // 1. Obtener SHA actual del archivo
-  const getFileRes = UrlFetchApp.fetch(url + `?ref=${GITHUB_BRANCH}`, {
+  const getFileRes = UrlFetchApp.fetch(fileUrl + `?ref=${GITHUB_BRANCH}`, {
     method: "get",
     headers: {
-      "Authorization": "token " + token,
+      "Authorization": "Bearer " + token,
       "Accept": "application/vnd.github.v3+json",
       "User-Agent": "Sara15-GAS-Backend"
     },
@@ -215,11 +367,13 @@ function commitDatabaseToGitHub(databaseObj, message) {
   if (getFileRes.getResponseCode() === 200) {
     const fileInfo = JSON.parse(getFileRes.getContentText());
     sha = fileInfo.sha;
+  } else if (getFileRes.getResponseCode() !== 404) {
+    throw new Error("GitHub error al consultar SHA (HTTP " + getFileRes.getResponseCode() + "): " + getFileRes.getContentText());
   }
 
-  // 2. Codificar contenido en Base64
+  // 2. Codificar contenido en Base64 UTF-8
   const jsonString = JSON.stringify(databaseObj, null, 2);
-  const base64Content = Utilities.base64Encode(Utilities.newBlob(jsonString).getBytes());
+  const base64Content = Utilities.base64Encode(Utilities.newBlob(jsonString, "application/json").getBytes());
 
   // 3. Crear el commit vía PUT
   const commitPayload = {
@@ -231,10 +385,10 @@ function commitDatabaseToGitHub(databaseObj, message) {
     commitPayload.sha = sha;
   }
 
-  const putRes = UrlFetchApp.fetch(url, {
+  const putRes = UrlFetchApp.fetch(fileUrl, {
     method: "put",
     headers: {
-      "Authorization": "token " + token,
+      "Authorization": "Bearer " + token,
       "Accept": "application/vnd.github.v3+json",
       "Content-Type": "application/json",
       "User-Agent": "Sara15-GAS-Backend"
@@ -243,10 +397,11 @@ function commitDatabaseToGitHub(databaseObj, message) {
     muteHttpExceptions: true
   });
 
-  if (putRes.getResponseCode() === 200 || putRes.getResponseCode() === 201) {
+  const statusCode = putRes.getResponseCode();
+  if (statusCode === 200 || statusCode === 201) {
     return JSON.parse(putRes.getContentText());
   } else {
-    throw new Error("Fallo al comitear a GitHub: " + putRes.getContentText());
+    throw new Error("GitHub rechazó el commit (HTTP " + statusCode + "): " + putRes.getContentText());
   }
 }
 
@@ -255,16 +410,17 @@ function commitDatabaseToGitHub(databaseObj, message) {
  */
 function sendConfirmationEmail(leader, companions) {
   const toEmail = leader.email;
-  // Corregido: sintaxis correcta para interpolar el código QR
-  const qrUrl = `https://qrserver.com{encodeURIComponent(leader.code)}`; 
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(leader.code)}`;
 
   let companionsHtml = "";
   if (companions && companions.length > 0) {
     companionsHtml = `
-      <div style="background: rgba(242, 73, 231, 0.08); border-radius: 8px; padding: 15px; margin: 15px 0;">
-        <h4 style="margin: 0 0 10px 0; color: #f249e7; font-size: 15px;">&#128101; Acompañantes registrados contigo:</h4>
+      <div style="background: rgba(242, 73, 231, 0.08); border-radius: 8px; padding: 15px; margin: 15px 0; border: 1px solid rgba(242, 73, 231, 0.2);">
+        <h4 style="margin: 0 0 10px 0; color: #b515ab; font-size: 15px;">&#128101; Acompañantes registrados contigo:</h4>
         <ul style="margin: 0; padding-left: 20px; color: #444;">
-          ${companions.map(c => `<li><strong>\${c.name}</strong> (Puesto #\({c.slot_number} - Código: <code>\){c.code}</code>)</li>`).join("")}
+          ${companions.map(function(c) {
+            return `<li><strong>${c.name}</strong> (Puesto #${c.slot_number} - Código: <code>${c.code}</code>)</li>`;
+          }).join("")}
         </ul>
       </div>
     `;
@@ -291,6 +447,7 @@ function sendConfirmationEmail(leader, companions) {
         .notice-box { background: #fff2fc; border: 1px solid #f249e7; border-radius: 8px; padding: 14px; margin: 20px 0; color: #7a126e; text-align: center; font-weight: bold; }
         .calendar-btn-container { text-align: center; margin: 25px 0; }
         .btn-maps { display: inline-block; background: #f249e7; color: #ffffff !important; text-decoration: none; padding: 12px 24px; border-radius: 25px; font-weight: bold; font-size: 14px; margin-top: 10px; }
+        .btn-cal { display: inline-block; background: #1f0b2b; color: #f3ca65 !important; text-decoration: none; padding: 12px 24px; border-radius: 25px; font-weight: bold; font-size: 14px; }
         .footer { background: #f6ecf7; padding: 20px; text-align: center; font-size: 12px; color: #777; }
       </style>
     </head>
@@ -309,10 +466,10 @@ function sendConfirmationEmail(leader, companions) {
 
           <div class="qr-box">
             <div style="font-size: 13px; color: #666; margin-bottom: 10px; text-transform: uppercase; font-weight: bold;">Tu Pase Digital de Acceso</div>
-            <img src="${qrUrl}" alt="Pase QR" width="180" height="180" style="display: block; margin: 0 auto; border-radius: 8px;">
+            <img src="${qrUrl}" alt="Pase QR" width="200" height="200" style="display: block; margin: 0 auto; border-radius: 8px;">
             <div class="code-badge">${leader.code}</div>
-            <div style="font-size: 12px; color: #777; margin-top: 8px;">Puesto Asignado: <strong>#${leader.slot_number}</strong> de 90</div>
-            <div style="font-size: 11px; color: #999; margin-top: 4px;">Presenta este código en tu celular al llegar a la fiesta.</div>
+            <div style="font-size: 13px; color: #444; margin-top: 8px;">Puesto Asignado: <strong>#${leader.slot_number}</strong> de 90</div>
+            <div style="font-size: 11px; color: #888; margin-top: 4px;">Presenta este código en tu celular al llegar al salón.</div>
           </div>
 
           ${companionsHtml}
@@ -334,14 +491,14 @@ function sendConfirmationEmail(leader, companions) {
 
           <div class="calendar-btn-container">
             <p style="font-size: 13px; color: #555; margin-bottom: 10px;">¡No olvides agendarlo en tu Google Calendar!</p>
-            <a target="_blank" href="${CALENDAR_URL}">
-              <img border="0" src="https://google.com" alt="Guardar en Google Calendar">
+            <a target="_blank" href="${CALENDAR_URL}" class="btn-cal">
+              📅 Agendar en Google Calendar
             </a>
           </div>
         </div>
 
         <div class="footer">
-          <p style="margin: 4px 0;">Este message fue enviado automáticamente para la celebración de los 15 de Sara Sofía Ortega Ayala.</p>
+          <p style="margin: 4px 0;">Este mensaje fue enviado automáticamente para la celebración de los 15 de Sara Sofía Ortega Ayala.</p>
           <p style="margin: 4px 0;">Si por algún motivo no puedes asistir, por favor ingresa a la página web para liberar tu cupo a otro invitado.</p>
         </div>
       </div>
@@ -349,7 +506,7 @@ function sendConfirmationEmail(leader, companions) {
     </html>
   `;
 
-  GmailApp.sendEmail(toEmail, `[IMPORTANTE] ✨¡Asistencia Confirmada! Los 15 de Sara Sofía Ortega Ayala✨`, "", {
+  GmailApp.sendEmail(toEmail, `&#10024 [IMPORTANTE] ¡Asistencia Confirmada! Los 15 de Sara Sofía Ortega Ayala &#10024`, "", {
     htmlBody: htmlBody,
     name: "Los 15 de Sara Sofía",
     importance: "high"
@@ -357,7 +514,7 @@ function sendConfirmationEmail(leader, companions) {
 }
 
 /**
- * Enviar enlace único para cancelar asistencia (Túnel de Autenticación)
+ * Enviar enlace único para cancelar asistencia
  */
 function sendCancelLinkEmail(email, name, cancelUrl) {
   const htmlBody = `
@@ -377,11 +534,11 @@ function sendCancelLinkEmail(email, name, cancelUrl) {
       <div class="card">
         <h2 class="title">Verificación de Seguridad</h2>
         <p style="font-size: 16px;">Hola, <strong>${name}</strong>.</p>
-        <p style="color: #444; line-height: 1.6;">Por motivos de seguridad, para proceder con la cancelación de tu asistencia a los 15 Años de Sara Sofía, requerimos que confirmes esta acción a través del siguiente enlace encriptado:</p>
+        <p style="color: #444; line-height: 1.6;">Por motivos de seguridad, para proceder con la cancelación de tu asistencia a los 15 Años de Sara Sofía, puedes confirmar esta acción a través del siguiente enlace:</p>
         
-        <a href="${cancelUrl}" class="btn">Autenticar y Cancelar Asistencia</a>
+        <a href="${cancelUrl}" class="btn">Gestionar y Cancelar Asistencia</a>
         
-        <p style="color: #d63384; font-size: 14px; font-weight: bold;">Este enlace es único, personal e intransferible.</p>
+        <p style="color: #d63384; font-size: 14px; font-weight: bold;">Este enlace es único y personal.</p>
         
         <div class="footer">
           Si no solicitaste la cancelación, ignora este correo. Tu cupo sigue 100% asegurado en nuestro sistema.
@@ -391,7 +548,7 @@ function sendCancelLinkEmail(email, name, cancelUrl) {
     </html>
   `;
 
-    GmailApp.sendEmail(email, `⚠️[Acción Requerida] Verifica tu solicitud de cancelación - Los 15 de Sara Sofía⚠️`, "", {
+  GmailApp.sendEmail(email, `&#9888 [Acción Requerida] Gestiona tu asistencia - Los 15 de Sara Sofía &#9888`, "", {
     htmlBody: htmlBody,
     name: "Los 15 de Sara Sofía",
     importance: "high"
@@ -399,7 +556,7 @@ function sendCancelLinkEmail(email, name, cancelUrl) {
 }
 
 /**
- * Enviar correo informando que los cupos fueron cancelados exitosamente (Cálido y Elegante)
+ * Enviar correo informando que los cupos fueron cancelados exitosamente
  */
 function sendCancellationConfirmedEmail(requester, releasedCount) {
   const htmlBody = `
@@ -418,11 +575,11 @@ function sendCancellationConfirmedEmail(requester, releasedCount) {
         <h2 class="title">Asistencia Cancelada Exitosamente</h2>
         <p style="font-size: 16px;">Hola, <strong>${requester.name}</strong>.</p>
         <p style="color: #555; line-height: 1.6;">
-          El sistema ha procesado exitosamente tu solicitud. Se han liberado <strong>${releasedCount}</strong> puesto(s) en la base de datos oficial.
+          Tu solicitud fue procesada exitosamente en la base de datos oficial. Se han liberado <strong>${releasedCount}</strong> puesto(s).
         </p>
         <div style="background: rgba(229, 195, 120, 0.15); border-radius: 12px; padding: 20px; margin: 25px 0;">
           <p style="margin: 0; color: #6b5314; font-size: 15px; font-style: italic;">
-            "Nos habría encantado compartir esta noche mágica y soñada contigo, pero entendemos perfectamente que a veces los planes cambian. ¡Te agradecemos de todo corazón por avisarnos a tiempo y permitir que otro invitado pueda ocupar tu lugar en la celebración!"
+            "Nos habría encantado compartir esta noche mágica y soñada contigo, pero entendemos que a veces los planes cambian. ¡Te agradecemos de todo corazón por avisarnos a tiempo y permitir que otro invitado pueda ocupar tu lugar en la celebración!"
           </p>
         </div>
         <p style="color: #888; font-size: 13px;">Con cariño,<br><strong>Sara Sofía y su familia.</strong></p>
@@ -431,14 +588,15 @@ function sendCancellationConfirmedEmail(requester, releasedCount) {
     </html>
   `;
 
-  GmailApp.sendEmail(requester.email, `📢 [NOTIFICACIÓN] Tu Asistencia fue Cancelada  - Te extrañaremos en los 15 de Sara Sofía📢`, "", {
+  GmailApp.sendEmail(requester.email, `&#128363 [NOTIFICACIÓN] Asistencia Cancelada - Te extrañaremos en los 15 de Sara Sofía &#128363`, "", {
     htmlBody: htmlBody,
     name: "Los 15 de Sara Sofía",
     importance: "high"
   });
 }
+
 /**
- * Helper para respuestas JSON
+ * Helper para respuestas JSON con encabezados CORS permisivos
  */
 function createJsonResponse(data) {
   return ContentService.createTextOutput(JSON.stringify(data))

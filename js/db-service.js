@@ -1,6 +1,6 @@
 /**
  * SERVICIO DE BASE DE DATOS Y GESTIÓN DE ACCIONES (DB SERVICE)
- * Maneja la sincronización con GitHub (via Google Apps Script o API directa)
+ * Maneja la sincronización transaccional con GitHub (via Google Apps Script o API directa)
  * y la persistencia de cookies hasta el 21 de diciembre del 2026.
  */
 
@@ -60,33 +60,40 @@ class DatabaseService {
   }
 
   // ==========================================
-  // CONSULTA Y CARGA DE BASE DE DATOS
+  // CONSULTA Y CARGA DE BASE DE DATOS ULTRA RÁPIDA
   // ==========================================
 
-  async fetchDatabase() {
-    // 1. Si hay una URL de Google Apps Script configurada, intentamos consultar el backend
+  async fetchDatabase(forceFresh = false) {
+    // 1. Si hay una URL de Google Apps Script configurada, intentamos consultar con timeout controlado
     if (this.config.BACKEND_API_URL && this.config.BACKEND_API_URL.startsWith("http")) {
       try {
-        const response = await fetch(`${this.config.BACKEND_API_URL}?action=get_db&t=${Date.now()}`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4000); // 4s timeout para evitar congelamiento
+
+        const response = await fetch(`${this.config.BACKEND_API_URL}?action=get_db&t=${Date.now()}`, {
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
         if (response.ok) {
           const data = await response.json();
-          if (data && data.slots) {
+          if (data && Array.isArray(data.slots) && data.slots.length > 0) {
             this.saveLocalCache(data);
             return data;
           }
         }
       } catch (err) {
-        console.warn("Fallo al conectar con Google Apps Script, intentando respaldo...", err);
+        console.warn("Backend GAS no disponible o lento, usando consulta directa GitHub Raw...", err);
       }
     }
 
-    // 2. Intentamos consultar el archivo JSON en GitHub Raw con cache-buster
+    // 2. Consulta directa al archivo JSON en GitHub Raw con cache-buster (en tiempo real)
     try {
       const rawUrl = `${this.config.GITHUB.RAW_DB_URL}?nocache=${Date.now()}`;
-      const response = await fetch(rawUrl);
+      const response = await fetch(rawUrl, { cache: "no-store" });
       if (response.ok) {
         const data = await response.json();
-        if (data && data.slots) {
+        if (data && Array.isArray(data.slots) && data.slots.length > 0) {
           this.saveLocalCache(data);
           return data;
         }
@@ -95,12 +102,12 @@ class DatabaseService {
       console.warn("No se pudo obtener data de GitHub Raw:", e);
     }
 
-    // 3. Intentamos consultar el archivo local relativo data/database.json
+    // 3. Consulta local relativa data/database.json
     try {
-      const response = await fetch(`data/database.json?t=${Date.now()}`);
+      const response = await fetch(`data/database.json?t=${Date.now()}`, { cache: "no-store" });
       if (response.ok) {
         const data = await response.json();
-        if (data && data.slots) {
+        if (data && Array.isArray(data.slots) && data.slots.length > 0) {
           this.saveLocalCache(data);
           return data;
         }
@@ -111,11 +118,11 @@ class DatabaseService {
 
     // 4. Respaldo en caché local del navegador
     const cached = this.getLocalCache();
-    if (cached && cached.slots) {
+    if (cached && Array.isArray(cached.slots) && cached.slots.length > 0) {
       return cached;
     }
 
-    // 5. Inicialización predeterminada de 90 puestos vacíos si no hay nada
+    // 5. Generación por defecto de 90 puestos vacíos
     return this.generateDefaultDatabase();
   }
 
@@ -168,15 +175,15 @@ class DatabaseService {
   // ==========================================
 
   calculateVacancies(db) {
-    if (!db || !db.slots) return { available: 0, occupied: 0, total: 90 };
+    if (!db || !Array.isArray(db.slots)) return { available: 90, occupied: 0, locked: 0, total: 90 };
     
     const now = Date.now();
     // Limpiar bloqueos temporales expirados (más de 10 minutos)
-    const validLocks = (db.temporary_locks || []).filter(lock => lock.expires_at > now);
+    const validLocks = (db.temporary_locks || []).filter(lock => lock && lock.expires_at > now);
 
     let occupied = 0;
     for (const slot of db.slots) {
-      if (slot.guest !== null) {
+      if (slot && slot.guest !== null) {
         occupied++;
       }
     }
@@ -194,8 +201,12 @@ class DatabaseService {
   }
 
   async getVacanciesCount() {
-    const db = await this.fetchDatabase();
-    return this.calculateVacancies(db);
+    try {
+      const db = await this.fetchDatabase();
+      return this.calculateVacancies(db);
+    } catch (e) {
+      return { available: 90, occupied: 0, locked: 0, total: 90 };
+    }
   }
 
   // ==========================================
@@ -203,55 +214,27 @@ class DatabaseService {
   // ==========================================
 
   async lockSlotTemporarily(lockId) {
-    // Si hay backend configurado, notificamos
-    if (this.config.BACKEND_API_URL && this.config.BACKEND_API_URL.startsWith("http")) {
-      try {
-        await fetch(this.config.BACKEND_API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain" },
-          body: JSON.stringify({
-            action: "temp_lock",
-            lock_id: lockId
-          })
-        });
-      } catch (e) {
-        console.warn("Fallo al bloquear cupo en backend:", e);
-      }
-    }
-
-    // Registrar también localmente
-    const db = await this.fetchDatabase();
-    if (!db.temporary_locks) db.temporary_locks = [];
-    // Limpiar expirados
-    const now = Date.now();
-    db.temporary_locks = db.temporary_locks.filter(l => l.expires_at > now && l.lock_id !== lockId);
-    // Agregar nuevo bloqueo (expira en 10 minutos = 600000 ms)
-    db.temporary_locks.push({
-      lock_id: lockId,
-      expires_at: now + 600000
-    });
-    this.saveLocalCache(db);
+    try {
+      const db = await this.fetchDatabase();
+      if (!db.temporary_locks) db.temporary_locks = [];
+      const now = Date.now();
+      db.temporary_locks = db.temporary_locks.filter(l => l && l.expires_at > now && l.lock_id !== lockId);
+      db.temporary_locks.push({
+        lock_id: lockId,
+        expires_at: now + 600000 // 10 minutos
+      });
+      this.saveLocalCache(db);
+    } catch (e) {}
   }
 
   async releaseTemporaryLock(lockId) {
-    if (this.config.BACKEND_API_URL && this.config.BACKEND_API_URL.startsWith("http")) {
-      try {
-        await fetch(this.config.BACKEND_API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain" },
-          body: JSON.stringify({
-            action: "release_temp_lock",
-            lock_id: lockId
-          })
-        });
-      } catch (e) {}
-    }
-
-    const db = await this.fetchDatabase();
-    if (db.temporary_locks) {
-      db.temporary_locks = db.temporary_locks.filter(l => l.lock_id !== lockId);
-      this.saveLocalCache(db);
-    }
+    try {
+      const db = await this.fetchDatabase();
+      if (db.temporary_locks) {
+        db.temporary_locks = db.temporary_locks.filter(l => l && l.lock_id !== lockId);
+        this.saveLocalCache(db);
+      }
+    } catch (e) {}
   }
 
   // ==========================================
@@ -275,15 +258,14 @@ class DatabaseService {
     const db = await this.fetchDatabase();
     if (!db.all_time_guests || db.all_time_guests.length === 0) return null;
 
-    // Buscar si ya estuvo registrado como líder
+    const cleanDoc = documentNumber.toString().trim();
     const previous = db.all_time_guests.find(
-      g => g.document === documentNumber && g.is_leader === true
+      g => g.document === cleanDoc && g.is_leader === true
     );
     if (!previous) return null;
 
-    // Buscar los acompañantes que tuvo asociados en ese mismo grupo
     const groupCompanions = db.all_time_guests.filter(
-      g => g.group_id === previous.group_id && g.document !== documentNumber
+      g => g.group_id === previous.group_id && g.document !== cleanDoc
     );
 
     return {
@@ -294,12 +276,14 @@ class DatabaseService {
   }
 
   // ==========================================
-  // REGISTRO DE ASISTENCIA (LÍDER Y ACOMPAÑANTES)
+  // REGISTRO DE ASISTENCIA ATÓMICO (LÍDER Y ACOMPAÑANTES)
+  // REQUISITO ESTRICTO: NO SE GENERA PASE NI COOKIE NI CORREO
+  // SI GITHUB NO CONFIRMA EL COMMIT CON ÉXITO
   // ==========================================
 
   async registerGuest(leaderData, companions = [], tempLockId = null) {
     const totalPeople = 1 + companions.length;
-    const db = await this.fetchDatabase();
+    const db = await this.fetchDatabase(true);
     const stats = this.calculateVacancies(db);
 
     // Validar si hay cupo suficiente
@@ -310,18 +294,20 @@ class DatabaseService {
     // Validar que el documento del líder o acompañantes no esté actualmente activo
     const activeDocs = new Set();
     db.slots.forEach(s => {
-      if (s.guest && s.guest.document) {
+      if (s && s.guest && s.guest.document) {
         activeDocs.add(s.guest.document.toString().trim());
       }
     });
 
-    if (activeDocs.has(leaderData.document.toString().trim())) {
-      throw new Error(`El documento ${leaderData.document} ya tiene una asistencia activa confirmada.`);
+    const cleanLeaderDoc = leaderData.document.toString().trim();
+    if (activeDocs.has(cleanLeaderDoc)) {
+      throw new Error(`El documento ${cleanLeaderDoc} ya tiene una asistencia activa confirmada.`);
     }
 
     for (const comp of companions) {
-      if (activeDocs.has(comp.document.toString().trim())) {
-        throw new Error(`El documento ${comp.document} de acompañante ya está registrado.`);
+      const cleanCompDoc = comp.document.toString().trim();
+      if (activeDocs.has(cleanCompDoc)) {
+        throw new Error(`El documento ${cleanCompDoc} de acompañante ya está registrado.`);
       }
     }
 
@@ -335,7 +321,7 @@ class DatabaseService {
     }
 
     if (availableSlotIndices.length < totalPeople) {
-      throw new Error("No se encontraron suficientes puestos vacíos consecutivos.");
+      throw new Error("No se encontraron suficientes puestos libres disponibles.");
     }
 
     const groupId = "GRP-" + Date.now().toString(36).toUpperCase() + "-" + Math.random().toString(36).substring(2, 5).toUpperCase();
@@ -347,19 +333,21 @@ class DatabaseService {
     const leaderGuest = {
       code: leaderCode,
       name: leaderData.name.trim(),
-      document: leaderData.document.toString().trim(),
+      document: cleanLeaderDoc,
       email: leaderData.email.trim(),
       is_leader: true,
       group_id: groupId,
       leader_name: leaderData.name.trim(),
-      leader_document: leaderData.document.toString().trim(),
+      leader_document: cleanLeaderDoc,
       registered_at: registrationTimestamp,
       slot_number: leaderSlotIndex + 1,
       checked_in: false,
       checked_in_at: null
     };
 
-    db.slots[leaderSlotIndex].guest = leaderGuest;
+    // Crear clon profundo de base de datos para commit
+    const updatedDb = JSON.parse(JSON.stringify(db));
+    updatedDb.slots[leaderSlotIndex].guest = leaderGuest;
 
     // 2. Asignar acompañantes
     const registeredCompanions = [];
@@ -371,23 +359,23 @@ class DatabaseService {
         code: compCode,
         name: compData.name.trim(),
         document: compData.document.toString().trim(),
-        email: compData.email.trim() || leaderData.email.trim(),
+        email: (compData.email && compData.email.trim()) || leaderData.email.trim(),
         is_leader: false,
         group_id: groupId,
         leader_name: leaderData.name.trim(),
-        leader_document: leaderData.document.toString().trim(),
+        leader_document: cleanLeaderDoc,
         registered_at: registrationTimestamp,
         slot_number: compSlotIndex + 1,
         checked_in: false,
         checked_in_at: null
       };
 
-      db.slots[compSlotIndex].guest = compGuest;
+      updatedDb.slots[compSlotIndex].guest = compGuest;
       registeredCompanions.push(compGuest);
     }
 
     // 3. Registrar en historial permanente (all_time_guests)
-    if (!db.all_time_guests) db.all_time_guests = [];
+    if (!updatedDb.all_time_guests) updatedDb.all_time_guests = [];
     
     const leaderHistoryRecord = {
       ...leaderGuest,
@@ -399,24 +387,62 @@ class DatabaseService {
         code: c.code
       }))
     };
-    db.all_time_guests.push(leaderHistoryRecord);
+    updatedDb.all_time_guests.push(leaderHistoryRecord);
 
     for (const comp of registeredCompanions) {
-      db.all_time_guests.push({
+      updatedDb.all_time_guests.push({
         ...comp,
         status: "active"
       });
     }
 
     // Limpiar bloqueo temporal si existía
-    if (tempLockId && db.temporary_locks) {
-      db.temporary_locks = db.temporary_locks.filter(l => l.lock_id !== tempLockId);
+    if (tempLockId && updatedDb.temporary_locks) {
+      updatedDb.temporary_locks = updatedDb.temporary_locks.filter(l => l && l.lock_id !== tempLockId);
     }
 
-    // Guardar en caché local
-    this.saveLocalCache(db);
+    const commitMessage = `Confirmación de asistencia: ${leaderGuest.name} (${totalPeople} puesto/s: #${leaderGuest.slot_number}${registeredCompanions.length > 0 ? ', #' + registeredCompanions.map(c => c.slot_number).join(', #') : ''})`;
 
-    // Guardar Cookie en el dispositivo (obligatoria hasta el 21 Dic 2026)
+    // 4. TRANSACCIÓN ATÓMICA CON BACKEND / GITHUB:
+    // Primero enviamos el commit a GitHub. SI FALLA, NO GUARDAMOS NADA.
+    if (this.config.BACKEND_API_URL && this.config.BACKEND_API_URL.startsWith("http")) {
+      let commitResponse;
+      try {
+        commitResponse = await fetch(this.config.BACKEND_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify({
+            action: "register",
+            commit_message: commitMessage,
+            leader: leaderGuest,
+            companions: registeredCompanions,
+            database: updatedDb
+          })
+        });
+      } catch (networkErr) {
+        throw new Error("No se pudo conectar con el servidor para registrar en GitHub: " + networkErr.message);
+      }
+
+      if (!commitResponse.ok) {
+        throw new Error(`El servidor respondió con error HTTP ${commitResponse.status}. Tu cupo no fue guardado.`);
+      }
+
+      let data;
+      try {
+        data = await commitResponse.json();
+      } catch (jsonErr) {
+        throw new Error("Respuesta inválida del servidor. Registro no asegurado.");
+      }
+
+      if (!data.success) {
+        throw new Error(data.error || "GitHub rechazó la confirmación de la asistencia.");
+      }
+    }
+
+    // 5. SOLO SI GITHUB CONFIRMÓ EL COMMIT CON ÉXITO:
+    // Guardamos la base de datos en caché local y emitimos la cookie del dispositivo
+    this.saveLocalCache(updatedDb);
+
     const cookiePayload = {
       code: leaderGuest.code,
       name: leaderGuest.name,
@@ -435,27 +461,6 @@ class DatabaseService {
     };
     this.setAttendanceCookie(cookiePayload);
 
-    // 4. Enviar a Backend / GitHub para comitear y enviar correos desde maoaza13579@gmail.com
-    const commitMessage = `Confirmación de asistencia: ${leaderGuest.name} (${totalPeople} puesto/s: #${leaderGuest.slot_number}${registeredCompanions.length > 0 ? ', #' + registeredCompanions.map(c => c.slot_number).join(', #') : ''})`;
-
-    if (this.config.BACKEND_API_URL && this.config.BACKEND_API_URL.startsWith("http")) {
-      try {
-        await fetch(this.config.BACKEND_API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain" },
-          body: JSON.stringify({
-            action: "register",
-            commit_message: commitMessage,
-            leader: leaderGuest,
-            companions: registeredCompanions,
-            database: db
-          })
-        });
-      } catch (err) {
-        console.warn("Backend falló al comitear o enviar correo (los datos quedaron en memoria local):", err);
-      }
-    }
-
     return {
       success: true,
       leader: leaderGuest,
@@ -466,19 +471,21 @@ class DatabaseService {
   }
 
   // ==========================================
-  // CANCELACIÓN DE ASISTENCIA
+  // CANCELACIÓN DE ASISTENCIA (USUARIO Y ADMIN)
+  // REQUISITO ESTRICTO: NO SE INFORMA LIBERACIÓN NI SE ENVÍA EMAIL
+  // SI GITHUB NO ELIMINA EL REGISTRO PRIMERO
   // ==========================================
 
-  async cancelAttendance(documentOrCode, options = { cancelAllGroup: false, specificCodes: null }) {
-    const db = await this.fetchDatabase();
+  async cancelAttendance(documentOrCode, options = { cancelAllGroup: false, specificCodes: null, purgeFull: false }) {
+    const cleanId = (documentOrCode || "").toString().trim().toUpperCase();
+    const db = await this.fetchDatabase(true);
     
     // Buscar los puestos a cancelar
-    let targetSlots = [];
     let requesterGuest = null;
-
     for (const s of db.slots) {
-      if (s.guest) {
-        if (s.guest.document === documentOrCode || s.guest.code === documentOrCode) {
+      if (s && s.guest) {
+        if (s.guest.document.toString().trim().toUpperCase() === cleanId || 
+            s.guest.code.toString().trim().toUpperCase() === cleanId) {
           requesterGuest = s.guest;
           break;
         }
@@ -486,10 +493,13 @@ class DatabaseService {
     }
 
     if (!requesterGuest) {
-      // Buscar en all_time_guests por si ya fue cancelado
-      const wasEver = (db.all_time_guests || []).find(g => g.document === documentOrCode || g.code === documentOrCode);
+      // Buscar en all_time_guests por si ya fue cancelado previamente
+      const wasEver = (db.all_time_guests || []).find(g => 
+        (g.document && g.document.toString().trim().toUpperCase() === cleanId) || 
+        (g.code && g.code.toString().trim().toUpperCase() === cleanId)
+      );
       if (wasEver) {
-        throw new Error("Esta asistencia ya no se encuentra activa en los puestos oficiales.");
+        throw new Error("Esta asistencia ya no se encuentra activa en los 90 puestos oficiales.");
       }
       throw new Error("No se encontró ningún registro activo con los datos proporcionados.");
     }
@@ -501,73 +511,100 @@ class DatabaseService {
       if (options.cancelAllGroup) {
         // Cancelar a todos los miembros de su grupo
         db.slots.forEach(s => {
-          if (s.guest && s.guest.group_id === requesterGuest.group_id) {
-            codesToCancel.add(s.guest.code);
+          if (s && s.guest && s.guest.group_id === requesterGuest.group_id) {
+            codesToCancel.add(s.guest.code.toUpperCase());
           }
         });
       } else if (Array.isArray(options.specificCodes) && options.specificCodes.length > 0) {
         // Cancelar líder + específicos
-        codesToCancel.add(requesterGuest.code);
-        options.specificCodes.forEach(c => codesToCancel.add(c));
+        codesToCancel.add(requesterGuest.code.toUpperCase());
+        options.specificCodes.forEach(c => codesToCancel.add(c.toString().trim().toUpperCase()));
       } else {
         // Solo cancelar al líder
-        codesToCancel.add(requesterGuest.code);
+        codesToCancel.add(requesterGuest.code.toUpperCase());
       }
     } else {
       // Un acompañante solo puede cancelarse a sí mismo
-      codesToCancel.add(requesterGuest.code);
+      codesToCancel.add(requesterGuest.code.toUpperCase());
     }
 
-    // Liberar puestos en slots (dejar en blanco: guest = null)
+    // Clonar base de datos para la transacción
+    const updatedDb = JSON.parse(JSON.stringify(db));
+
+    // Liberar puestos en slots (dejar completamente en blanco: guest = null)
     let releasedSlots = [];
-    db.slots.forEach(s => {
-      if (s.guest && codesToCancel.has(s.guest.code)) {
+    updatedDb.slots.forEach(s => {
+      if (s && s.guest && codesToCancel.has(s.guest.code.toUpperCase())) {
         releasedSlots.push({
           slot: s.slot,
           guest_name: s.guest.name,
           guest_code: s.guest.code
         });
-        s.guest = null; // ¡Puesto destruido y liberado!
+        s.guest = null; // ¡Puesto destruido y liberado en la base de datos!
       }
     });
 
-    // Actualizar historial all_time_guests: no se borra, se marca como cancelled
-    if (db.all_time_guests) {
-      db.all_time_guests.forEach(g => {
-        if (codesToCancel.has(g.code)) {
-          g.status = "cancelled";
-          g.cancelled_at = cancellationTime;
-        }
-      });
+    // Actualizar historial all_time_guests
+    if (updatedDb.all_time_guests) {
+      if (options.purgeFull) {
+        // Purga total administrativa: borrar del historial
+        updatedDb.all_time_guests = updatedDb.all_time_guests.filter(g => !codesToCancel.has(g.code.toUpperCase()));
+      } else {
+        // Marcado oficial como cancelado
+        updatedDb.all_time_guests.forEach(g => {
+          if (codesToCancel.has(g.code.toUpperCase())) {
+            g.status = "cancelled";
+            g.cancelled_at = cancellationTime;
+          }
+        });
+      }
     }
 
-    // Si el usuario actual tiene la cookie de este registro, eliminar la cookie
-    const currentCookie = this.getAttendanceCookie();
-    if (currentCookie && (codesToCancel.has(currentCookie.code) || currentCookie.document === requesterGuest.document)) {
-      this.deleteAttendanceCookie();
-    }
-
-    this.saveLocalCache(db);
-
-    // Enviar commit a GitHub via backend
     const commitMessage = `Cancelación de asistencia: ${requesterGuest.name} liberó ${releasedSlots.length} puesto/s (#${releasedSlots.map(r => r.slot).join(', #')})`;
-    
+
+    // TRANSACCIÓN ATÓMICA CON GITHUB VIA BACKEND:
+    // Solo cuando GitHub responda exitosamente se confirma la liberación
     if (this.config.BACKEND_API_URL && this.config.BACKEND_API_URL.startsWith("http")) {
+      let res;
       try {
-        await fetch(this.config.BACKEND_API_URL, {
+        res = await fetch(this.config.BACKEND_API_URL, {
           method: "POST",
           headers: { "Content-Type": "text/plain" },
           body: JSON.stringify({
-            action: "cancel",
+            action: options.purgeFull ? "admin_purge" : "cancel",
             commit_message: commitMessage,
             requester: requesterGuest,
             released_slots: releasedSlots,
-            database: db
+            database: updatedDb
           })
         });
-      } catch (e) {
-        console.warn("Fallo al enviar cancelación al backend:", e);
+      } catch (netErr) {
+        throw new Error("Fallo de red al comunicar con GitHub: " + netErr.message);
       }
+
+      if (!res.ok) {
+        throw new Error(`El servidor rechazó la operación (HTTP ${res.status}). No se eliminó el registro.`);
+      }
+
+      let data;
+      try {
+        data = await res.json();
+      } catch (e) {
+        throw new Error("Respuesta ilegible del servidor. El cupo no fue eliminado.");
+      }
+
+      if (!data.success) {
+        throw new Error(data.error || "GitHub rechazó la eliminación del registro.");
+      }
+    }
+
+    // IMPACTO EN LOCAL: Solo tras la confirmación de GitHub
+    this.saveLocalCache(updatedDb);
+
+    // Si el usuario actual tiene la cookie de este registro en su navegador, eliminarla
+    const currentCookie = this.getAttendanceCookie();
+    if (currentCookie && (codesToCancel.has(currentCookie.code.toUpperCase()) || currentCookie.document === requesterGuest.document)) {
+      this.deleteAttendanceCookie();
     }
 
     return {
@@ -579,6 +616,22 @@ class DatabaseService {
   }
 
   // ==========================================
+  // PURGA MANUAL ADMINISTRATIVA (DESDE EL ADMIN DASHBOARD)
+  // ==========================================
+
+  async adminPurgeSlot(slotNumber) {
+    const db = await this.fetchDatabase(true);
+    const slotIdx = slotNumber - 1;
+
+    if (!db.slots[slotIdx] || !db.slots[slotIdx].guest) {
+      throw new Error(`El puesto #${slotNumber} ya está completamente libre.`);
+    }
+
+    const guestToPurge = db.slots[slotIdx].guest;
+    return await this.cancelAttendance(guestToPurge.code, { cancelAllGroup: false, purgeFull: true });
+  }
+
+  // ==========================================
   // ENVÍO DE LINK DE CANCELACIÓN AL CORREO
   // ==========================================
 
@@ -586,8 +639,9 @@ class DatabaseService {
     const db = await this.fetchDatabase();
     let guestFound = null;
 
+    const cleanDoc = documentNumber.toString().trim();
     for (const s of db.slots) {
-      if (s.guest && s.guest.document === documentNumber.toString().trim()) {
+      if (s && s.guest && s.guest.document.toString().trim() === cleanDoc) {
         guestFound = s.guest;
         break;
       }
@@ -597,7 +651,6 @@ class DatabaseService {
       throw new Error("No existe ninguna confirmación de asistencia activa con este número de documento.");
     }
 
-    // Generar token de cancelación y enlace
     const cancelToken = btoa(JSON.stringify({
       code: guestFound.code,
       doc: guestFound.document,
@@ -606,7 +659,6 @@ class DatabaseService {
 
     const cancelUrl = `${window.location.origin}${window.location.pathname.replace(/[^/]*$/, '')}cancel.html?token=${encodeURIComponent(cancelToken)}&doc=${encodeURIComponent(guestFound.document)}`;
 
-    // Si hay backend configurado, enviar correo real desde maoaza13579@gmail.com
     if (this.config.BACKEND_API_URL && this.config.BACKEND_API_URL.startsWith("http")) {
       try {
         const res = await fetch(this.config.BACKEND_API_URL, {
@@ -627,7 +679,6 @@ class DatabaseService {
       }
     }
 
-    // Modo simulación / local
     return {
       success: true,
       email: guestFound.email,
@@ -642,11 +693,11 @@ class DatabaseService {
 
   async checkInGuest(code) {
     const cleanCode = (code || "").trim().toUpperCase();
-    const db = await this.fetchDatabase();
+    const db = await this.fetchDatabase(true);
 
     let targetSlot = null;
     for (const s of db.slots) {
-      if (s.guest && s.guest.code && s.guest.code.toUpperCase() === cleanCode) {
+      if (s && s.guest && s.guest.code && s.guest.code.toUpperCase() === cleanCode) {
         targetSlot = s;
         break;
       }
@@ -656,7 +707,7 @@ class DatabaseService {
       return {
         success: false,
         reason: "not_found",
-        message: "El código no corresponde a ningún cupo activo actualmente."
+        message: "El código no corresponde a ningún cupo activo en los 90 puestos oficiales."
       };
     }
 
@@ -669,12 +720,10 @@ class DatabaseService {
       };
     }
 
-    // Marcar como ingresado
     const nowIso = new Date().toISOString();
     targetSlot.guest.checked_in = true;
     targetSlot.guest.checked_in_at = nowIso;
 
-    // Actualizar también en historial all_time_guests
     if (db.all_time_guests) {
       const hist = db.all_time_guests.find(g => g.code === cleanCode);
       if (hist) {
@@ -683,13 +732,11 @@ class DatabaseService {
       }
     }
 
-    this.saveLocalCache(db);
-
-    // Notificar al backend / GitHub commit
     const commitMessage = `Ingreso al evento: ${targetSlot.guest.name} (Puesto #${targetSlot.slot})`;
+
     if (this.config.BACKEND_API_URL && this.config.BACKEND_API_URL.startsWith("http")) {
       try {
-        await fetch(this.config.BACKEND_API_URL, {
+        const res = await fetch(this.config.BACKEND_API_URL, {
           method: "POST",
           headers: { "Content-Type": "text/plain" },
           body: JSON.stringify({
@@ -700,10 +747,16 @@ class DatabaseService {
             database: db
           })
         });
-      } catch (e) {
-        console.warn("Fallo al sincronizar check-in con backend:", e);
+        const data = await res.json();
+        if (!data.success) {
+          throw new Error(data.error || "GitHub rechazó el registro de ingreso.");
+        }
+      } catch (err) {
+        console.warn("Aviso check-in backend:", err);
       }
     }
+
+    this.saveLocalCache(db);
 
     return {
       success: true,
@@ -713,27 +766,30 @@ class DatabaseService {
   }
 
   // ==========================================
-  // CONSULTA DE DETALLES DE GRUPO PARA CANCELACIÓN
+  // DETALLES DE GRUPO PARA CANCELACIÓN
   // ==========================================
 
   async getGroupDetailsForCancellation(identifier) {
+    const cleanId = (identifier || "").toString().trim().toUpperCase();
     const db = await this.fetchDatabase();
     let guest = null;
 
     for (const s of db.slots) {
-      if (s.guest && (s.guest.document === identifier || s.guest.code === identifier)) {
-        guest = s.guest;
-        break;
+      if (s && s.guest) {
+        if (s.guest.document.toString().trim().toUpperCase() === cleanId || 
+            s.guest.code.toString().trim().toUpperCase() === cleanId) {
+          guest = s.guest;
+          break;
+        }
       }
     }
 
     if (!guest) return null;
 
-    // Si es líder, buscar todos sus acompañantes activos
     let companions = [];
     if (guest.is_leader) {
       db.slots.forEach(s => {
-        if (s.guest && s.guest.group_id === guest.group_id && s.guest.code !== guest.code) {
+        if (s && s.guest && s.guest.group_id === guest.group_id && s.guest.code !== guest.code) {
           companions.push(s.guest);
         }
       });

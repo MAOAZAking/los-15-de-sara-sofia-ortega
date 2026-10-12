@@ -72,17 +72,22 @@ Para que el script pueda hacer commits en tu repositorio:
 
 ---
 
-## 🚀 PASO 5: Vincular la URL a la Página Web
+## 🔄 ¿Cómo Actualizar el Código si ya tienes el Proyecto Creado?
 
-1. Abre el archivo `js/config.js` en tu proyecto.
-2. Busca la línea:
-   ```javascript
-   BACKEND_API_URL: "",
-   ```
-3. Pega la URL que copiaste entre las comillas:
-   ```javascript
-   BACKEND_API_URL: "https://script.google.com/macros/s/AKfycbx...TU_URL_AQUI.../exec",
-   ```
-4. Guarda el archivo y sube los cambios a tu repositorio con git push.
+Si ya creaste el proyecto antes y necesitas actualizarlo con el nuevo `backend/Code.gs`:
 
-¡Listo! A partir de ese momento, cada confirmación, cancelación o escaneo de QR activará commits automáticos y enviará los correos reales desde tu cuenta `maoaza13579@gmail.com`.
+1. Abre tu proyecto en **[https://script.google.com/](https://script.google.com/)**.
+2. En el archivo `Código.gs`, borra todo y pega el contenido actualizado de `backend/Code.gs`.
+3. Guarda los cambios (**Ctrl + S**).
+4. Verifica que en **⚙️ Configuración del proyecto** -> **Propiedades de la secuencia de comandos**, exista la propiedad:
+   - **`GITHUB_TOKEN`**: Tu token de GitHub `ghp_...` con permiso `repo`.
+   - **`ADMIN_USER`** *(opcional)*: Tu usuario de admin (por defecto: `admin`).
+   - **`ADMIN_PASS`** *(opcional)*: Tu contraseña de admin (por defecto: `Sara15Admin2026`).
+5. **¡PASO CLAVE DE GOOGLE!**:
+   - Haz clic en **Implementar** (Deploy) arriba a la derecha -> **Gestionar implementaciones** (Manage deployments).
+   - Haz clic en el icono del **Lápiz ✏️** (Editar).
+   - En **Versión**, haz clic en el desplegable y selecciona **Nueva versión** (New version).
+   - Haz clic en **Implementar**.
+   *(Si no seleccionas "Nueva versión", Google seguirá ejecutando la versión vieja en la URL)*.
+
+¡Listo! Tu backend queda 100% sincronizado y enviando commits reales a GitHub.
