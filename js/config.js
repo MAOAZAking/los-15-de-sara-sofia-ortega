@@ -8,20 +8,20 @@ const CONFIG = {
   EVENT: {
     QUINCEANERA: "Sara Sofía Ortega Ayala",
     DATE_STR: "20 de Diciembre de 2026",
-    DATE_ISO: "2026-12-20T19:00:00-05:00", // 7:00 PM hora Colombia
+    DATE_ISO: "2026-12-20T17:00:00-05:00", // 5:00 PM hora Colombia
     YEAR: 2026,
     MONTH: 11, // Diciembre (0-indexed en JS)
     DAY: 20,
-    HOUR: 19,
+    HOUR: 17,
     MINUTE: 0,
     MAX_CAPACITY: 90,
     PRIMARY_COLOR_RGB: "rgb(242, 73, 231)",
     PRIMARY_COLOR_HEX: "#F249E7",
-    RESERVED_COLOR: "Morado", // Reservado exclusivamente para la quinceañera
+    RESERVED_COLOR: "Lila", // Reservado exclusivamente para la quinceañera
     VENUE_NAME: "Recepción de Eventos",
     VENUE_ADDRESS: "Cra. 23 # 56-50, Comuna 8, Cali, Valle del Cauca",
     GOOGLE_MAPS_URL: "https://www.google.com/maps/dir//Cra.+23+%2356-50,+Comuna+8,+Cali,+Valle+del+Cauca/@3.4417114,-76.4965274,17z/data=!4m18!1m8!3m7!1s0x8e30a70733ebf565:0xc9f09c63545da21c!2sCra.+23+%2356-50,+Comuna+8,+Cali,+Valle+del+Cauca!3b1!8m2!3d3.4415515!4d-76.4965047!16s%2Fg%2F11vjm1vyjl!4m8!1m0!1m5!1m1!1s0x8e30a70733ebf565:0xc9f09c63545da21c!2m2!1d-76.4965047!2d3.4415515!3e0?entry=ttu",
-    GOOGLE_CALENDAR_URL: "https://calendar.google.com/calendar/event?action=TEMPLATE&tmeid=MmVrbnRqNjMxZ201a3RpcGNvMnExamJ2YnEgbWFvYXphMTM1NzlAbQ&tmsrc=maoaza13579%40gmail.com",
+    GOOGLE_CALENDAR_URL: "https://drive.google.com/uc?export=download&id=1Y9keX4gxIq8T5jqC60YuNZyEEs4g4bd8",
     ORGANIZER_EMAIL: "maoaza13579@gmail.com"
   },
 
@@ -45,7 +45,7 @@ const CONFIG = {
   // Backend URL (Google Apps Script Web App desplegada con tu correo)
   // Al desplegar tu Google Apps Script, pega la URL generada aquí.
   // Mientras esté vacía o en desarrollo local, el sistema usa el modo híbrido con persistencia local y sincronización.
-  BACKEND_API_URL: "https://script.google.com/macros/s/AKfycbxNXLjSH5IJkz2G5MGgq04fniF-kSlfY8VJrYnvH7k9UKjh37XOxeNhpc9vGcbS5IvX/exec", 
+  BACKEND_API_URL: "https://script.google.com/macros/s/AKfycbyaGqM2H6VaNkjALfxo8NVOY5RSoVy3Gmoka7I6zV3-VWNNzCxNgggd7pNj6BaIV6m1/exec", 
 
   // Frase estricta para confirmación de cancelación
   CANCEL_SECURITY_PHRASE: "CANCELAR asistencia"

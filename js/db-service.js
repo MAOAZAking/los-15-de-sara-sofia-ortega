@@ -139,7 +139,7 @@ class DatabaseService {
         title: "Los 15 de Sara Sofía Ortega Ayala",
         quinceanera: this.config.EVENT.QUINCEANERA,
         date: this.config.EVENT.DATE_STR,
-        time: "7:00 PM",
+        time: "5:00 PM",
         venue: this.config.EVENT.VENUE_ADDRESS,
         max_capacity: 90,
         primary_color: this.config.EVENT.PRIMARY_COLOR_RGB,

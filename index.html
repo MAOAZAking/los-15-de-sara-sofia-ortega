@@ -79,7 +79,7 @@
       <!-- Tarjetas de Información: Fecha, Lugar, Calendario -->
       <div class="details-grid">
         <!-- Fecha y Hora (Toda la tarjeta agenda el evento) -->
-        <a href="https://calendar.google.com/calendar/event?action=TEMPLATE&amp;tmeid=MmVrbnRqNjMxZ201a3RpcGNvMnExamJ2YnEgbWFvYXphMTM1NzlAbQ&amp;tmsrc=maoaza13579%40gmail.com" 
+        <a href="https://drive.google.com/uc?export=download&id=1Y9keX4gxIq8T5jqC60YuNZyEEs4g4bd8" 
           target="_blank" 
           class="detail-card" 
           style="text-decoration: none; display: block;">
@@ -88,7 +88,7 @@
           <h3 class="detail-title">Fecha y Hora</h3>
           <p class="detail-text">
             <strong>Domingo, 20 de Diciembre de 2026</strong><br>
-            Recepción a partir de las <strong>7:00 PM</strong>.
+            Recepción a partir de las <strong>5:00 PM</strong>.
           </p>
           
           <div style="margin-top: 15px;">
@@ -101,7 +101,8 @@
 
 
         <!-- Lugar y Ruta (Toda la tarjeta es el enlace) -->
-        <a href="https://www.google.com/maps/dir//Cra.+23+%2356-50,+Comuna+8,+Cali,+Valle+del+Cauca/@3.4417114,-76.4965274,17z/data=!4m18!1m8!3m7!1s0x8e30a70733ebf565:0xc9f09c63545da21c!2sCra.+23+%2356-50,+Comuna+8,+Cali,+Valle+del+Cauca!3b1!8m2!3d3.4415515!4d-76.4965047!16s%2Fg%2F11vjm1vyjl!4m8!1m0!1m5!1m1!1s0x8e30a70733ebf565:0xc9f09c63545da21c!2m2!1d-76.4965047!2d3.4415515!3e0?entry=ttu" 
+        <a id="card-mapa" 
+          href="" 
           target="_blank" 
           class="detail-card" 
           style="text-decoration: none; display: block;">
@@ -113,15 +114,37 @@
             Comuna 8, Cali, Valle del Cauca.
           </p>
           
-          <!-- Cambiado a span para evitar enlaces anidados -->
-          <span class="detail-btn">
+          <span id="txt-btn-mapa" class="detail-btn">
             🚗 Cómo Llegar (Google Maps)
           </span>
         </a>
 
+        <script>
+          window.addEventListener('DOMContentLoaded', () => {
+            const cardMapa = document.getElementById('card-mapa');
+            const txtBtn = document.getElementById('txt-btn-mapa');
+            
+            // Aquí tu script toma la URL que viene desde tu objeto de configuración config.js
+            let urlBase = config.GOOGLE_MAPS_URL; 
+
+            // Detectar si el usuario está abriendo la web desde un ecosistema Apple
+            const esApple = /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent) && !window.MSStream;
+
+            if (esApple) {
+              // Si es iPhone, cambiamos el link para forzar la app de Apple Maps nativa
+              cardMapa.href = "https://maps.apple.com/?daddr=3.4415515,-76.4965047&dirflg=d";
+              txtBtn.innerHTML = "🚗 Cómo Llegar (Apple Maps)";
+            } else {
+              // Si es Android o PC, mantiene el link oficial de Google Maps
+              cardMapa.href = urlBase;
+            }
+          });
+        </script>
+
+
       </div>
 
-      <!-- Banner de Dress Code con Alerta del Color Morado Reservado -->
+      <!-- Banner de Dress Code con Alerta del Color LILA Reservado -->
       <section class="dress-code-banner">
         <h3 class="dress-code-title">
           <span>👗</span> Código de Vestimenta: Formal / De Gala <span>✨</span>
@@ -130,7 +153,7 @@
           Queremos que luzcas espectacular y elegante en esta noche de ensueño.
         </p>
         <div class="dress-code-warning">
-          ⚠️ NOTA ESPECIAL: El color <span>MORADO</span> está reservado exclusivamente para la quinceañera.
+          ⚠️ NOTA ESPECIAL: El color <span>LILA</span> está reservado exclusivamente para la quinceañera.
         </div>
       </section>
 

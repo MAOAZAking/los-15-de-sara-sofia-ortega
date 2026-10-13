@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   await checkVacanciesAndSetupRSVP();
 
   // ==========================================================================
-  // RELOJ CONTADOR REGRESIVO ATÓMICO (20 DIC 2026, 7:00 PM HORA COLOMBIA)
+  // RELOJ CONTADOR REGRESIVO ATÓMICO (20 DIC 2026, 5:00 PM HORA COLOMBIA)
   // ==========================================================================
   function initCountdown() {
     const daysEl = document.getElementById("count-days");
@@ -86,8 +86,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const secsEl = document.getElementById("count-secs");
     if (!daysEl || !hoursEl || !minsEl || !secsEl) return;
 
-    // 20 de Diciembre de 2026, 7:00 PM hora Colombia (UTC-5)
-    const targetDate = new Date("2026-12-20T19:00:00-05:00").getTime();
+    // 20 de Diciembre de 2026, 5:00 PM hora Colombia (UTC-5)
+    const targetDate = new Date("2026-12-20T17:00:00-05:00").getTime();
 
     function update() {
       const now = Date.now();

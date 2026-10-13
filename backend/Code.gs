@@ -29,10 +29,10 @@ const DB_FILE_PATH = "data/database.json";
 
 // Configuración del evento
 const EVENT_NAME = "Los 15 Años de Sara Sofía Ortega Ayala";
-const EVENT_DATE = "Domingo, 20 de Diciembre de 2026 - 7:00 PM";
+const EVENT_DATE = "Domingo, 20 de Diciembre de 2026 - 5:00 PM";
 const EVENT_VENUE = "Cra. 23 # 56-50, Comuna 8, Cali, Valle del Cauca";
-const MAPS_URL = "https://www.google.com/maps/dir//Cra.+23+%2356-50,+Comuna+8,+Cali,+Valle+del+Cauca/@3.4417114,-76.4965274,17z";
-const CALENDAR_URL = "https://calendar.google.com/calendar/event?action=TEMPLATE&tmeid=MmVrbnRqNjMxZ201a3RpcGNvMnExamJ2YnEgbWFvYXphMTM1NzlAbQ&tmsrc=maoaza13579%40gmail.com";
+const MAPS_URL = "https://www.google.com/maps/dir//Cra.+23+%2356-50,+Comuna+8,+Cali,+Valle+del+Cauca/@3.4417114,-76.4965274,17z/data=!4m18!1m8!3m7!1s0x8e30a70733ebf565:0xc9f09c63545da21c!2sCra.+23+%2356-50,+Comuna+8,+Cali,+Valle+del+Cauca!3b1!8m2!3d3.4415515!4d-76.4965047!16s%2Fg%2F11vjm1vyjl!4m8!1m0!1m5!1m1!1s0x8e30a70733ebf565:0xc9f09c63545da21c!2m2!1d-76.4965047!2d3.4415515!3e0?entry=ttu";
+const CALENDAR_URL = "https://drive.google.com/uc?export=download&id=1Y9keX4gxIq8T5jqC60YuNZyEEs4g4bd8";
 const PRIMARY_COLOR = "#F249E7";
 
 /**
@@ -486,7 +486,7 @@ function sendConfirmationEmail(leader, companions) {
           <div class="notice-box">
             &#128087; DRESS CODE / CÓDIGO DE VESTIMENTA:<br>
             Traje Formal / De Gala.<br>
-            <span style="font-size: 15px; color: #a40893;">&#9888;&#65039; IMPORTANTE: El color morado está reservado exclusivamente para la quinceañera.</span>
+            <span style="font-size: 15px; color: #a40893;">&#9888;&#65039; IMPORTANTE: El color LILA está reservado exclusivamente para la quinceañera.</span>
           </div>
 
           <div class="calendar-btn-container">
