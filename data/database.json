@@ -23,8 +23,8 @@
         "leader_document": "1107844397",
         "registered_at": "2026-10-23T22:42:48.028Z",
         "slot_number": 1,
-        "checked_in": false,
-        "checked_in_at": null
+        "checked_in": true,
+        "checked_in_at": "2026-10-23T22:44:25.793Z"
       }
     },
     {
@@ -397,8 +397,8 @@
       "leader_document": "1107844397",
       "registered_at": "2026-10-23T22:42:48.028Z",
       "slot_number": 1,
-      "checked_in": false,
-      "checked_in_at": null,
+      "checked_in": true,
+      "checked_in_at": "2026-10-23T22:44:25.793Z",
       "status": "active",
       "companions_registered": []
     }
