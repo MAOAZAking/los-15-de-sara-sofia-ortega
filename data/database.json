@@ -12,20 +12,7 @@
   "slots": [
     {
       "slot": 1,
-      "guest": {
-        "code": "SARA15-V62428",
-        "name": "Miguel Angel Ortega Ayala",
-        "document": "1107844397",
-        "email": "maoaza13579@gmail.com",
-        "is_leader": true,
-        "group_id": "GRP-MVLK2NA4-94I",
-        "leader_name": "Miguel Angel Ortega Ayala",
-        "leader_document": "1107844397",
-        "registered_at": "2026-10-23T22:42:48.028Z",
-        "slot_number": 1,
-        "checked_in": true,
-        "checked_in_at": "2026-10-23T22:44:25.793Z"
-      }
+      "guest": null
     },
     {
       "slot": 2,
@@ -385,22 +372,5 @@
     }
   ],
   "temporary_locks": [],
-  "all_time_guests": [
-    {
-      "code": "SARA15-V62428",
-      "name": "Miguel Angel Ortega Ayala",
-      "document": "1107844397",
-      "email": "maoaza13579@gmail.com",
-      "is_leader": true,
-      "group_id": "GRP-MVLK2NA4-94I",
-      "leader_name": "Miguel Angel Ortega Ayala",
-      "leader_document": "1107844397",
-      "registered_at": "2026-10-23T22:42:48.028Z",
-      "slot_number": 1,
-      "checked_in": true,
-      "checked_in_at": "2026-10-23T22:44:25.793Z",
-      "status": "active",
-      "companions_registered": []
-    }
-  ]
+  "all_time_guests": []
 }
