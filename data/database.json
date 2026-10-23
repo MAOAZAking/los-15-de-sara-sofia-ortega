@@ -12,20 +12,7 @@
   "slots": [
     {
       "slot": 1,
-      "guest": {
-        "code": "SARA15-9CWAM8",
-        "name": "Rosa Ayala",
-        "document": "67008246",
-        "email": "reasesorias4@gmail.com",
-        "is_leader": true,
-        "group_id": "GRP-MV61KTHI-VUT",
-        "leader_name": "Rosa Ayala",
-        "leader_document": "67008246",
-        "registered_at": "2026-10-13T02:08:30.534Z",
-        "slot_number": 1,
-        "checked_in": true,
-        "checked_in_at": "2026-10-13T02:10:47.807Z"
-      }
+      "guest": null
     },
     {
       "slot": 2,
@@ -399,35 +386,6 @@
   ],
   "temporary_locks": [],
   "all_time_guests": [
-    {
-      "code": "SARA15-9CWAM8",
-      "name": "Rosa Ayala",
-      "document": "67008246",
-      "email": "reasesorias4@gmail.com",
-      "is_leader": true,
-      "group_id": "GRP-MV61KTHI-VUT",
-      "leader_name": "Rosa Ayala",
-      "leader_document": "67008246",
-      "registered_at": "2026-10-13T02:08:30.534Z",
-      "slot_number": 1,
-      "checked_in": true,
-      "checked_in_at": "2026-10-13T02:10:47.807Z",
-      "status": "active",
-      "companions_registered": [
-        {
-          "name": "Rodrigo Ortega",
-          "document": "94510672",
-          "email": "alexortega71@hotmail.com",
-          "code": "SARA15-74HBD4"
-        },
-        {
-          "name": "Miguel Ortega",
-          "document": "1107844397",
-          "email": "reasesorias4@gmail.com",
-          "code": "SARA15-BY6GZC"
-        }
-      ]
-    },
     {
       "code": "SARA15-74HBD4",
       "name": "Rodrigo Ortega",
