@@ -46,20 +46,7 @@
     },
     {
       "slot": 3,
-      "guest": {
-        "code": "SARA15-BY6GZC",
-        "name": "Miguel Ortega",
-        "document": "1107844397",
-        "email": "reasesorias4@gmail.com",
-        "is_leader": false,
-        "group_id": "GRP-MV61KTHI-VUT",
-        "leader_name": "Rosa Ayala",
-        "leader_document": "67008246",
-        "registered_at": "2026-10-13T02:08:30.534Z",
-        "slot_number": 3,
-        "checked_in": false,
-        "checked_in_at": null
-      }
+      "guest": null
     },
     {
       "slot": 4,
@@ -452,21 +439,6 @@
       "leader_document": "67008246",
       "registered_at": "2026-10-13T02:08:30.534Z",
       "slot_number": 2,
-      "checked_in": false,
-      "checked_in_at": null,
-      "status": "active"
-    },
-    {
-      "code": "SARA15-BY6GZC",
-      "name": "Miguel Ortega",
-      "document": "1107844397",
-      "email": "reasesorias4@gmail.com",
-      "is_leader": false,
-      "group_id": "GRP-MV61KTHI-VUT",
-      "leader_name": "Rosa Ayala",
-      "leader_document": "67008246",
-      "registered_at": "2026-10-13T02:08:30.534Z",
-      "slot_number": 3,
       "checked_in": false,
       "checked_in_at": null,
       "status": "active"
