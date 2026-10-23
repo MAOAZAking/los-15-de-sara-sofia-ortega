@@ -469,6 +469,72 @@ body {
   font-weight: 600;
 }
 
+/* Banner de Plazo de Confirmación (25 de Noviembre) */
+.rsvp-deadline-banner {
+  background: rgba(36, 9, 52, 0.7);
+  border: 1px solid rgba(229, 195, 120, 0.45);
+  border-radius: 18px;
+  padding: 14px 20px;
+  margin: 20px auto;
+  max-width: 520px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35), inset 0 0 15px rgba(229, 195, 120, 0.08);
+  backdrop-filter: blur(8px);
+  text-align: left;
+}
+
+.rsvp-deadline-icon {
+  font-size: 26px;
+  animation: pulse-deadline 2s infinite ease-in-out;
+}
+
+@keyframes pulse-deadline {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15) rotate(5deg); }
+}
+
+.rsvp-deadline-info {
+  flex: 1;
+}
+
+.rsvp-deadline-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--gold-accent);
+  margin-bottom: 2px;
+}
+
+.rsvp-deadline-text {
+  font-size: 13.5px;
+  color: #f7eafc;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.rsvp-deadline-text strong {
+  color: #fff2b2;
+  text-shadow: 0 0 10px rgba(229, 195, 120, 0.5);
+}
+
+.deadline-expired-notice {
+  background: rgba(220, 53, 69, 0.18);
+  border: 1.5px solid #dc3545;
+  color: #ff99a8;
+  padding: 16px 22px;
+  border-radius: 16px;
+  margin-top: 15px;
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(220, 53, 69, 0.3);
+}
+
 /* ==========================================================================
    PASE VIP DIGITAL (CUANDO YA SE REGISTRÓ CON COOKIE)
    ========================================================================== */

@@ -64,16 +64,38 @@ document.addEventListener("DOMContentLoaded", async () => {
   let isScanning = false;
   let currentFacingMode = "environment";
   let scanCooldown = false;
+  let currentlySelectedGuest = null;
+  let currentlySelectedSlot = null;
 
-  // 1. Comprobar Sesión
+  // Botón de Cerrar Sesión
+  const btnLogout = document.getElementById("btn-admin-logout");
+  if (btnLogout) {
+    btnLogout.addEventListener("click", () => {
+      if (confirm("¿Estás seguro de que deseas cerrar la sesión del Administrador?")) {
+        localStorage.removeItem("sara15_admin_authenticated");
+        sessionStorage.removeItem("sara15_admin_authenticated");
+        document.documentElement.classList.remove("admin-logged-in");
+        if (loginOverlay) loginOverlay.style.display = "flex";
+        window.showTopNotice("Sesión de administrador cerrada.", "info", 3000);
+      }
+    });
+  }
+
+  // 1. Comprobar Sesión Persistente
   checkAuthentication();
 
   function checkAuthentication() {
-    const isLoggedIn = sessionStorage.getItem("sara15_admin_authenticated");
-    if (isLoggedIn === "true") {
+    const isAuthLocal = localStorage.getItem("sara15_admin_authenticated") === "true";
+    const isAuthSession = sessionStorage.getItem("sara15_admin_authenticated") === "true";
+
+    if (isAuthLocal || isAuthSession) {
+      localStorage.setItem("sara15_admin_authenticated", "true");
+      sessionStorage.setItem("sara15_admin_authenticated", "true");
+      document.documentElement.classList.add("admin-logged-in");
       if (loginOverlay) loginOverlay.style.display = "none";
       loadAdminData();
     } else {
+      document.documentElement.classList.remove("admin-logged-in");
       if (loginOverlay) loginOverlay.style.display = "flex";
     }
   }
@@ -148,7 +170,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       if (authSuccess) {
+        localStorage.setItem("sara15_admin_authenticated", "true");
         sessionStorage.setItem("sara15_admin_authenticated", "true");
+        document.documentElement.classList.add("admin-logged-in");
         if (loginOverlay) loginOverlay.style.display = "none";
         window.showTopNotice("Bienvenido al Dashboard de Administración", "success", 3000);
         await loadAdminData();
@@ -291,12 +315,23 @@ document.addEventListener("DOMContentLoaded", async () => {
         <td style="font-family: monospace; color: var(--primary-light);">${guest ? `${escapeHtml(guest.code)}` : "-"}</td>
         <td>${actions}</td>
       `;
+
+      if (guest) {
+        tr.style.cursor = "pointer";
+        tr.setAttribute("title", "Toca para abrir información y gestionar acompañantes");
+        tr.addEventListener("click", (e) => {
+          if (e.target.closest("button")) return;
+          openGuestDetailModal(guest, s.slot);
+        });
+      }
+
       slotsTableBody.appendChild(tr);
     });
 
     // Listeners Check-in manual
     slotsTableBody.querySelectorAll(".btn-manual-checkin").forEach(btn => {
-      btn.addEventListener("click", async () => {
+      btn.addEventListener("click", async (e) => {
+        e.stopPropagation();
         const code = btn.getAttribute("data-code");
         btn.setAttribute("disabled", "true");
         btn.innerHTML = `...`;
@@ -306,7 +341,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Listeners Purga / Dar de baja
     slotsTableBody.querySelectorAll(".btn-admin-cancel-slot").forEach(btn => {
-      btn.addEventListener("click", async () => {
+      btn.addEventListener("click", async (e) => {
+        e.stopPropagation();
         const code = btn.getAttribute("data-code");
         const slot = btn.getAttribute("data-slot");
 
@@ -319,14 +355,397 @@ document.addEventListener("DOMContentLoaded", async () => {
             await dbService.cancelAttendance(code, { cancelAllGroup: false, purgeFull: true });
             window.showTopNotice(`Puesto #${slot} dado de baja exitosamente en GitHub.`, "success", 4000);
             await loadAdminData();
-          } catch (e) {
-            console.error("Error al dar de baja:", e);
-            window.showTopNotice(e.message || "Error al dar de baja en GitHub.", "error", 5000);
+          } catch (err) {
+            console.error("Error al dar de baja:", err);
+            window.showTopNotice(err.message || "Error al dar de baja en GitHub.", "error", 5000);
             btn.removeAttribute("disabled");
             btn.innerHTML = `Dar de baja`;
           }
         }
       });
+    });
+  }
+
+  // ==========================================
+  // MODAL DE DETALLE DEL INVITADO & ACOMPAÑANTES
+  // ==========================================
+  const guestDetailModal = document.getElementById("admin-guest-detail-modal");
+  const btnCloseGuestDetail = document.getElementById("btn-close-guest-detail");
+  const detailNormalView = document.getElementById("detail-normal-view");
+  const detailAddCompView = document.getElementById("detail-add-comp-view");
+
+  const detailSlotBadge = document.getElementById("detail-slot-badge");
+  const detailGuestName = document.getElementById("detail-guest-name");
+  const detailGuestStatus = document.getElementById("detail-guest-status");
+  const detailGuestCode = document.getElementById("detail-guest-code");
+  const detailGuestDoc = document.getElementById("detail-guest-doc");
+  const detailGuestEmail = document.getElementById("detail-guest-email");
+  const detailGuestRole = document.getElementById("detail-guest-role");
+  const detailCompanionsList = document.getElementById("detail-companions-list");
+
+  const btnOpenAddCompMode = document.getElementById("btn-open-add-comp-mode");
+  const btnDetailCheckin = document.getElementById("btn-detail-checkin");
+  const btnDetailDelete = document.getElementById("btn-detail-delete");
+
+  // Modo Agregar Acompañantes Elements
+  const addCompTargetName = document.getElementById("add-comp-target-name");
+  const addCompInputsContainer = document.getElementById("add-comp-inputs-container");
+  const btnAddAnotherCompInput = document.getElementById("btn-add-another-comp-input");
+  const btnConfirmSaveComps = document.getElementById("btn-confirm-save-comps");
+  const btnCancelAddComp = document.getElementById("btn-cancel-add-comp");
+
+  function openGuestDetailModal(guest, slot) {
+    if (!guestDetailModal) return;
+
+    currentlySelectedGuest = guest;
+    currentlySelectedSlot = slot;
+
+    // Vista normal activa
+    if (detailNormalView) detailNormalView.style.display = "block";
+    if (detailAddCompView) detailAddCompView.style.display = "none";
+
+    if (detailSlotBadge) detailSlotBadge.textContent = `Puesto #${slot} de 90`;
+    if (detailGuestName) detailGuestName.textContent = guest.name;
+    if (detailGuestCode) detailGuestCode.textContent = guest.code;
+    if (detailGuestDoc) detailGuestDoc.textContent = guest.document || "No registrado";
+    if (detailGuestEmail) detailGuestEmail.textContent = guest.email || "No registrado";
+
+    if (detailGuestRole) {
+      if (guest.is_leader) {
+        detailGuestRole.innerHTML = `<span style="color:var(--gold-accent);">👑 Cabeza de Grupo / Líder</span>`;
+      } else {
+        detailGuestRole.innerHTML = `<span>👥 Acompañante de <strong>${escapeHtml(guest.leader_name || 'Líder')}</strong></span>`;
+      }
+    }
+
+    if (detailGuestStatus) {
+      if (guest.checked_in) {
+        const timeStr = guest.checked_in_at ? new Date(guest.checked_in_at).toLocaleTimeString() : "";
+        detailGuestStatus.textContent = `✓ Ya Ingresó ${timeStr ? '(' + timeStr + ')' : ''}`;
+        detailGuestStatus.className = "guest-detail-status status-tag entered";
+      } else {
+        detailGuestStatus.textContent = "Confirmado (Por Ingresar)";
+        detailGuestStatus.className = "guest-detail-status status-tag occupied";
+      }
+    }
+
+    if (btnDetailCheckin) {
+      if (guest.checked_in) {
+        btnDetailCheckin.textContent = "✓ Ya Ingresó";
+        btnDetailCheckin.disabled = true;
+      } else {
+        btnDetailCheckin.textContent = "✅ Dar Ingreso";
+        btnDetailCheckin.disabled = false;
+      }
+    }
+
+    // Renderizar acompañantes de su grupo
+    if (detailCompanionsList && currentDb && currentDb.slots) {
+      const companions = currentDb.slots.filter(s => 
+        s && s.guest && s.guest.group_id === guest.group_id && s.guest.code !== guest.code
+      );
+
+      if (companions.length === 0) {
+        detailCompanionsList.innerHTML = `<span style="color:#888; font-size:12.5px;">Este invitado no tiene acompañantes asignados aún. Usa "Agregar Acompañantes" para añadirle.</span>`;
+      } else {
+        detailCompanionsList.innerHTML = companions.map(c => `
+          <div class="detail-companion-pill">
+            <div>
+              <span style="color:var(--gold-accent); font-weight:700; margin-right:6px;">#${c.slot}</span>
+              <strong style="color:#fff;">${escapeHtml(c.guest.name)}</strong>
+              <span style="color:#aaa; font-size:11.5px; margin-left:6px;">(${escapeHtml(c.guest.code)})</span>
+            </div>
+            <div>
+              ${c.guest.checked_in 
+                ? '<span style="color:#2ecc71; font-weight:bold; font-size:11px;">✓ Ingresó</span>' 
+                : '<span style="color:var(--primary-light); font-size:11px;">Confirmado</span>'}
+            </div>
+          </div>
+        `).join("");
+      }
+    }
+
+    guestDetailModal.classList.add("active");
+  }
+
+  if (btnCloseGuestDetail) {
+    btnCloseGuestDetail.addEventListener("click", () => {
+      guestDetailModal.classList.remove("active");
+    });
+  }
+
+  if (guestDetailModal) {
+    guestDetailModal.addEventListener("click", (e) => {
+      if (e.target === guestDetailModal) {
+        guestDetailModal.classList.remove("active");
+      }
+    });
+  }
+
+  // Dar Ingreso desde el modal de detalle
+  if (btnDetailCheckin) {
+    btnDetailCheckin.addEventListener("click", async () => {
+      if (!currentlySelectedGuest) return;
+      btnDetailCheckin.disabled = true;
+      btnDetailCheckin.textContent = "Procesando...";
+      await executeCheckIn(currentlySelectedGuest.code);
+      
+      // Actualizar vista del modal
+      if (currentDb) {
+        const updatedSlot = currentDb.slots.find(s => s && s.guest && s.guest.code === currentlySelectedGuest.code);
+        if (updatedSlot && updatedSlot.guest) {
+          openGuestDetailModal(updatedSlot.guest, updatedSlot.slot);
+        }
+      }
+    });
+  }
+
+  // Dar de baja desde el modal de detalle
+  if (btnDetailDelete) {
+    btnDetailDelete.addEventListener("click", async () => {
+      if (!currentlySelectedGuest) return;
+      if (confirm(`⚠️ ¿Estás seguro de eliminar el puesto #${currentlySelectedSlot} de ${currentlySelectedGuest.name}? Quedará libre para otros invitados.`)) {
+        btnDetailDelete.disabled = true;
+        btnDetailDelete.textContent = "Eliminando...";
+        window.showTopNotice(`Dando de baja a ${currentlySelectedGuest.name}...`, "loading");
+        try {
+          await dbService.cancelAttendance(currentlySelectedGuest.code, { cancelAllGroup: false, purgeFull: true });
+          window.showTopNotice(`Puesto liberado exitosamente.`, "success", 4000);
+          guestDetailModal.classList.remove("active");
+          await loadAdminData();
+        } catch (err) {
+          window.showTopNotice(err.message || "Error al eliminar puesto.", "error", 5000);
+          btnDetailDelete.disabled = false;
+          btnDetailDelete.textContent = "🗑️ Eliminar Puesto";
+        }
+      }
+    });
+  }
+
+  // Entrar en Modo "Agregar Acompañantes"
+  if (btnOpenAddCompMode) {
+    btnOpenAddCompMode.addEventListener("click", () => {
+      if (!currentlySelectedGuest) return;
+      if (detailNormalView) detailNormalView.style.display = "none";
+      if (detailAddCompView) detailAddCompView.style.display = "block";
+
+      if (addCompTargetName) addCompTargetName.textContent = currentlySelectedGuest.name;
+
+      if (addCompInputsContainer) {
+        addCompInputsContainer.innerHTML = "";
+        createAddCompanionInputRow();
+      }
+    });
+  }
+
+  // Cancelar Modo Agregar Acompañantes (Vuelve a la vista normal)
+  if (btnCancelAddComp) {
+    btnCancelAddComp.addEventListener("click", () => {
+      if (detailAddCompView) detailAddCompView.style.display = "none";
+      if (detailNormalView) detailNormalView.style.display = "block";
+    });
+  }
+
+  // Añadir otra fila de input para acompañante
+  function createAddCompanionInputRow(initialVal = "") {
+    if (!addCompInputsContainer) return;
+    const count = addCompInputsContainer.children.length + 1;
+
+    const row = document.createElement("div");
+    row.className = "add-comp-row";
+    row.innerHTML = `
+      <input type="text" class="add-comp-input" placeholder="Nombre completo del acompañante #${count}" value="${escapeHtml(initialVal)}" required>
+      <button type="button" class="btn-remove-comp-row" title="Quitar este acompañante">✕</button>
+    `;
+
+    const removeBtn = row.querySelector(".btn-remove-comp-row");
+    removeBtn.addEventListener("click", () => {
+      row.remove();
+      // Re-numerar placeholders
+      const rows = addCompInputsContainer.querySelectorAll(".add-comp-row");
+      rows.forEach((r, idx) => {
+        const inp = r.querySelector(".add-comp-input");
+        if (inp) inp.placeholder = `Nombre completo del acompañante #${idx + 1}`;
+      });
+    });
+
+    addCompInputsContainer.appendChild(row);
+    const newInput = row.querySelector(".add-comp-input");
+    if (newInput) newInput.focus();
+  }
+
+  if (btnAddAnotherCompInput) {
+    btnAddAnotherCompInput.addEventListener("click", () => {
+      createAddCompanionInputRow();
+    });
+  }
+
+  // Guardar Acompañantes (SOLO BOTÓN GUARDAR)
+  if (btnConfirmSaveComps) {
+    btnConfirmSaveComps.addEventListener("click", async () => {
+      if (!currentlySelectedGuest) return;
+
+      const inputs = addCompInputsContainer.querySelectorAll(".add-comp-input");
+      const names = Array.from(inputs).map(inp => inp.value.trim()).filter(n => n.length > 0);
+
+      if (names.length === 0) {
+        window.showTopNotice("Por favor ingresa el nombre de al menos un acompañante.", "warning", 3500);
+        return;
+      }
+
+      btnConfirmSaveComps.disabled = true;
+      const originalText = btnConfirmSaveComps.innerHTML;
+      btnConfirmSaveComps.innerHTML = `<span class="spinner" style="width:14px;height:14px;border-width:2px;margin-right:8px;vertical-align:middle;"></span> Guardando en GitHub...`;
+      window.showTopNotice(`Agregando ${names.length} acompañante(s) a ${currentlySelectedGuest.name}...`, "loading");
+
+      try {
+        const res = await dbService.adminAddCompanions(currentlySelectedGuest.code, names);
+        window.showTopNotice(`¡${names.length} acompañante(s) agregado(s) exitosamente!`, "success", 4000);
+
+        // Actualizar datos del dashboard de forma reactiva sin recargar la página
+        await loadAdminData();
+
+        // Encontrar invitado actualizado y refrescar modal
+        if (currentDb && currentDb.slots) {
+          const updatedSlot = currentDb.slots.find(s => s && s.guest && s.guest.code === currentlySelectedGuest.code);
+          if (updatedSlot && updatedSlot.guest) {
+            openGuestDetailModal(updatedSlot.guest, updatedSlot.slot);
+          }
+        }
+
+      } catch (err) {
+        console.error("Error agregando acompañantes:", err);
+        window.showTopNotice(err.message || "Error al agregar acompañantes.", "error", 5000);
+      } finally {
+        btnConfirmSaveComps.disabled = false;
+        btnConfirmSaveComps.innerHTML = originalText;
+      }
+    });
+  }
+
+  // ==========================================
+  // MODAL CREAR NUEVO INVITADO / CABEZA DE FAMILIA (ADMIN)
+  // ==========================================
+  const createGuestModal = document.getElementById("admin-create-guest-modal");
+  const btnOpenCreateGuest = document.getElementById("btn-open-create-guest");
+  const btnCloseCreateGuest = document.getElementById("btn-close-create-guest");
+  const btnCancelNewGuest = document.getElementById("btn-cancel-new-guest");
+  const createGuestForm = document.getElementById("admin-create-guest-form");
+  const newGuestName = document.getElementById("new-guest-name");
+  const newGuestDoc = document.getElementById("new-guest-doc");
+  const newGuestEmail = document.getElementById("new-guest-email");
+  const newGuestCompanionsList = document.getElementById("new-guest-companions-list");
+  const btnAddNewGuestCompanion = document.getElementById("btn-add-new-guest-companion");
+
+  function openCreateGuestModal() {
+    if (!createGuestModal) return;
+    if (newGuestName) newGuestName.value = "";
+    if (newGuestDoc) newGuestDoc.value = "";
+    if (newGuestEmail) newGuestEmail.value = "";
+    if (newGuestCompanionsList) newGuestCompanionsList.innerHTML = "";
+    createGuestModal.classList.add("active");
+    if (newGuestName) newGuestName.focus();
+  }
+
+  if (btnOpenCreateGuest) {
+    btnOpenCreateGuest.addEventListener("click", openCreateGuestModal);
+  }
+
+  if (btnCloseCreateGuest) {
+    btnCloseCreateGuest.addEventListener("click", () => {
+      createGuestModal.classList.remove("active");
+    });
+  }
+
+  if (btnCancelNewGuest) {
+    btnCancelNewGuest.addEventListener("click", () => {
+      createGuestModal.classList.remove("active");
+    });
+  }
+
+  if (createGuestModal) {
+    createGuestModal.addEventListener("click", (e) => {
+      if (e.target === createGuestModal) {
+        createGuestModal.classList.remove("active");
+      }
+    });
+  }
+
+  function addNewGuestCompanionInputRow() {
+    if (!newGuestCompanionsList) return;
+    const count = newGuestCompanionsList.children.length + 1;
+
+    const row = document.createElement("div");
+    row.className = "add-comp-row";
+    row.innerHTML = `
+      <input type="text" class="add-comp-input new-comp-name-input" placeholder="Nombre del acompañante #${count} (Solo nombre)" required>
+      <button type="button" class="btn-remove-comp-row" title="Quitar">✕</button>
+    `;
+
+    row.querySelector(".btn-remove-comp-row").addEventListener("click", () => {
+      row.remove();
+      const rows = newGuestCompanionsList.querySelectorAll(".add-comp-row");
+      rows.forEach((r, idx) => {
+        const inp = r.querySelector(".new-comp-name-input");
+        if (inp) inp.placeholder = `Nombre del acompañante #${idx + 1} (Solo nombre)`;
+      });
+    });
+
+    newGuestCompanionsList.appendChild(row);
+    const inp = row.querySelector(".new-comp-name-input");
+    if (inp) inp.focus();
+  }
+
+  if (btnAddNewGuestCompanion) {
+    btnAddNewGuestCompanion.addEventListener("click", () => {
+      addNewGuestCompanionInputRow();
+    });
+  }
+
+  if (createGuestForm) {
+    createGuestForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const name = (newGuestName ? newGuestName.value : "").trim();
+      const doc = (newGuestDoc ? newGuestDoc.value : "").trim();
+      const email = (newGuestEmail ? newGuestEmail.value : "").trim();
+
+      if (!name) {
+        window.showTopNotice("Por favor ingresa el nombre completo del invitado.", "warning", 3500);
+        if (newGuestName) newGuestName.focus();
+        return;
+      }
+
+      // Recopilar acompañantes
+      const compInputs = newGuestCompanionsList.querySelectorAll(".new-comp-name-input");
+      const compNames = Array.from(compInputs).map(inp => inp.value.trim()).filter(n => n.length > 0);
+
+      const submitBtn = createGuestForm.querySelector("#btn-submit-new-guest");
+      const originalText = submitBtn ? submitBtn.innerHTML : "Guardar Invitado";
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<span class="spinner" style="width:14px;height:14px;border-width:2px;margin-right:8px;vertical-align:middle;"></span> Guardando en GitHub...`;
+      }
+
+      window.showTopNotice(`Registrando a ${name} y guardando en GitHub...`, "loading");
+
+      try {
+        const res = await dbService.adminRegisterGuest({ name, document: doc, email }, compNames);
+        window.showTopNotice(`¡Invitado ${name} (+${compNames.length} acompañantes) registrado con éxito!`, "success", 4000);
+        createGuestModal.classList.remove("active");
+
+        // Actualizar dashboard reactivamente sin recargar la página
+        await loadAdminData();
+
+      } catch (err) {
+        console.error("Error al registrar invitado por admin:", err);
+        window.showTopNotice(err.message || "Error al registrar invitado en GitHub.", "error", 5000);
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalText;
+        }
+      }
     });
   }
 

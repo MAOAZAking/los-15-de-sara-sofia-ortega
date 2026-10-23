@@ -22,7 +22,15 @@ const CONFIG = {
     VENUE_ADDRESS: "Cra. 23 # 56-50, Comuna 8, Cali, Valle del Cauca",
     GOOGLE_MAPS_URL: "https://www.google.com/maps/dir//Cra.+23+%2356-50,+Comuna+8,+Cali,+Valle+del+Cauca/@3.4417114,-76.4965274,17z/data=!4m18!1m8!3m7!1s0x8e30a70733ebf565:0xc9f09c63545da21c!2sCra.+23+%2356-50,+Comuna+8,+Cali,+Valle+del+Cauca!3b1!8m2!3d3.4415515!4d-76.4965047!16s%2Fg%2F11vjm1vyjl!4m8!1m0!1m5!1m1!1s0x8e30a70733ebf565:0xc9f09c63545da21c!2m2!1d-76.4965047!2d3.4415515!3e0?entry=ttu",
     GOOGLE_CALENDAR_URL: "https://drive.google.com/uc?export=download&id=1Y9keX4gxIq8T5jqC60YuNZyEEs4g4bd8",
-    ORGANIZER_EMAIL: "maoaza13579@gmail.com"
+    ORGANIZER_EMAIL: "maoaza13579@gmail.com",
+    // Fecha límite para confirmaciones de asistencia (Todo el 25 de Noviembre de 2026, 26 días antes del evento)
+    RSVP_DEADLINE_ISO: "2026-11-25T23:59:59-05:00",
+    RSVP_DEADLINE_STR: "25 de Noviembre de 2026"
+  },
+
+  // Sincronización en tiempo real ultra rápida (Sin configuración requerida)
+  REALTIME: {
+    NTFY_PREFIX: "sara15_checkin_"
   },
 
   // Persistencia y Cookies

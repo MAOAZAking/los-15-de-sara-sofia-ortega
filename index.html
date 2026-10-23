@@ -165,6 +165,15 @@
       <!-- Sección de Asistencia y Vacantes (Si no está registrado) -->
       <div id="rsvp-action-container">
         
+        <!-- Banner de Plazo Límite de Confirmación (25 de Noviembre de 2026) -->
+        <div class="rsvp-deadline-banner" id="rsvp-deadline-banner">
+          <span class="rsvp-deadline-icon">⏳</span>
+          <div class="rsvp-deadline-info">
+            <span class="rsvp-deadline-tag">Plazo de Confirmación</span>
+            <p class="rsvp-deadline-text">Se admiten confirmaciones de asistencia hasta todo el <strong>25 de Noviembre de 2026</strong></p>
+          </div>
+        </div>
+
         <!-- Indicador de Vacantes (Máximo 90) -->
         <div class="vacancies-status-bar" id="vacancies-bar-container">
           <div class="vacancy-pill">
@@ -177,6 +186,11 @@
         <button type="button" class="btn-main-rsvp" id="btn-main-rsvp" style="display: none;">
           ✨ Confirmar Asistencia ✨
         </button>
+
+        <!-- Mensaje de Plazo Expirado (Si ya pasó el 25 de noviembre) -->
+        <div class="deadline-expired-notice" id="deadline-expired-notice" style="display: none;">
+          🔒 El plazo oficial para confirmar asistencia finalizó el 25 de Noviembre de 2026. ¡Gracias a todos los confirmados!
+        </div>
 
         <!-- Mensaje de Aforo Completo (Si no hay vacantes) -->
         <div class="full-capacity-notice" id="full-capacity-notice" style="display: none;">
@@ -256,13 +270,6 @@
           <div class="form-feedback" id="feedback-doc"></div>
         </div>
 
-        <!-- Banner inteligente si es un Líder que ya estuvo registrado antes -->
-        <div class="former-group-banner" id="former-group-banner">
-          <div class="former-group-title">✨ ¡Bienvenido de nuevo!</div>
-          <div class="former-group-text" id="former-group-text"></div>
-          <button type="button" class="btn-restore-group" id="btn-restore-group">Re-inscribir acompañantes</button>
-        </div>
-
         <!-- PASO 3: CORREO ELECTRÓNICO (Validación personal vs corporativo) -->
         <div class="form-step locked" id="step-email">
           <label class="form-label" for="input-email">
@@ -282,22 +289,9 @@
           <div class="form-feedback" id="feedback-email"></div>
         </div>
 
-        <!-- PASO 4: SECCIÓN DE ACOMPAÑANTES -->
-        <div class="companions-section" id="companions-section">
-          <div class="companions-header">
-            <span class="companions-title">👥 ¿Asistirás con acompañantes?</span>
-          </div>
-          
-          <div id="companions-list"></div>
-
-          <button type="button" class="btn-add-companion" id="btn-add-companion">
-            <span>+</span> Agregar Acompañante
-          </button>
-        </div>
-
         <!-- Botón de Envío -->
         <button type="submit" class="btn-submit-registration" id="btn-submit-registration" disabled>
-          🎉Confirmar mi Asistencia🎉
+          🎉 Confirmar mi Asistencia 🎉
         </button>
 
         <p class="calendar-consent-note">

@@ -132,10 +132,10 @@ function doPost(e) {
     // 1. REGISTRAR ASISTENCIA Y COMITEAR A GITHUB
     // ==========================================
     if (action === "register") {
-      if (!payload.leader || !payload.leader.name || !payload.leader.email) {
+      if (!payload.leader || !payload.leader.name) {
         return createJsonResponse({
           success: false,
-          error: "Datos faltantes: Se requiere información del 'leader' (name y email)."
+          error: "Datos faltantes: Se requiere información del 'leader' (al menos el campo 'name')."
         });
       }
       if (!payload.database) {
@@ -161,17 +161,19 @@ function doPost(e) {
         });
       }
 
-      // 2. SOLO SI EL COMMIT FUE EXITOSO SE ENVÍA EL CORREO
-      try {
-        sendConfirmationEmail(leader, companions);
-      } catch (mailErr) {
-        Logger.log("Aviso: Commit guardado pero error enviando email: " + mailErr.toString());
+      // 2. SOLO SI EL COMMIT FUE EXITOSO Y TIENE CORREO VÁLIDO SE ENVÍA EL CORREO
+      if (leader.email && leader.email.includes("@")) {
+        try {
+          sendConfirmationEmail(leader, companions);
+        } catch (mailErr) {
+          Logger.log("Aviso: Commit guardado pero error enviando email: " + mailErr.toString());
+        }
       }
 
       return createJsonResponse({
         success: true,
         commit: commitResult,
-        email_sent_to: leader.email
+        email_sent_to: leader.email || null
       });
     }
 

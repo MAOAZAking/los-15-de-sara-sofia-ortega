@@ -35,21 +35,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   const feedbackName = document.getElementById("feedback-name");
   const feedbackDoc = document.getElementById("feedback-doc");
   const feedbackEmail = document.getElementById("feedback-email");
-  const formerGroupBanner = document.getElementById("former-group-banner");
-  const formerGroupText = document.getElementById("former-group-text");
-  const btnRestoreGroup = document.getElementById("btn-restore-group");
-
-  // Acompañantes
-  const companionsSection = document.getElementById("companions-section");
-  const companionsList = document.getElementById("companions-list");
-  const btnAddCompanion = document.getElementById("btn-add-companion");
   const btnSubmitRegistration = document.getElementById("btn-submit-registration");
 
   // Estado local del formulario
   let currentLockId = "lock-" + Date.now();
-  let companionCount = 0;
   let currentAvailableSlots = 90;
-  let previousRegistrationFound = null;
 
   // Sanitizador de seguridad contra XSS
   function escapeHtml(text) {
@@ -129,6 +119,24 @@ document.addEventListener("DOMContentLoaded", async () => {
       vacanciesCountEl.innerHTML = `<span class="spinner" style="width:12px;height:12px;display:inline-block;border-width:2px;margin-right:6px;"></span>Consultando...`;
     }
 
+    // Verificar si ya venció el plazo de confirmación (25 de Noviembre de 2026 inclusive)
+    const deadlineIso = (config.EVENT && config.EVENT.RSVP_DEADLINE_ISO) || "2026-11-25T23:59:59-05:00";
+    const deadlineExceeded = Date.now() > new Date(deadlineIso).getTime();
+
+    const deadlineNotice = document.getElementById("deadline-expired-notice");
+    const fullNotice = document.getElementById("full-capacity-notice");
+
+    if (deadlineExceeded) {
+      if (mainRsvpBtn) mainRsvpBtn.style.display = "none";
+      if (deadlineNotice) deadlineNotice.style.display = "block";
+      if (fullNotice) fullNotice.style.display = "none";
+      if (vacanciesCountEl) vacanciesCountEl.textContent = "Plazo Finalizado";
+      if (vacanciesIndicatorDot) {
+        vacanciesIndicatorDot.style.background = "#dc3545";
+      }
+      return;
+    }
+
     try {
       const stats = await dbService.getVacanciesCount();
       currentAvailableSlots = stats.available;
@@ -150,13 +158,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       // Si hay al menos 1 vacante, muestra el botón. Si 0, muestra aviso de aforo completo
-      const fullNotice = document.getElementById("full-capacity-notice");
       if (stats.available >= 1) {
         if (mainRsvpBtn) mainRsvpBtn.style.display = "inline-flex";
         if (fullNotice) fullNotice.style.display = "none";
+        if (deadlineNotice) deadlineNotice.style.display = "none";
       } else {
         if (mainRsvpBtn) mainRsvpBtn.style.display = "none";
         if (fullNotice) fullNotice.style.display = "block";
+        if (deadlineNotice) deadlineNotice.style.display = "none";
       }
     } catch (err) {
       console.warn("Error al consultar vacantes:", err);
@@ -170,6 +179,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ==========================================================================
   if (mainRsvpBtn) {
     mainRsvpBtn.addEventListener("click", async () => {
+      // Validar fecha límite
+      const deadlineIso = (config.EVENT && config.EVENT.RSVP_DEADLINE_ISO) || "2026-11-25T23:59:59-05:00";
+      if (Date.now() > new Date(deadlineIso).getTime()) {
+        window.showTopNotice("El plazo de confirmación de asistencia finalizó el 25 de Noviembre.", "warning", 5000);
+        return;
+      }
+
       window.showTopNotice("Verificando disponibilidad de cupos en tiempo real...", "loading");
       
       const stats = await dbService.getVacanciesCount();
@@ -268,8 +284,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       inputDoc.classList.add("valid");
       inputDoc.classList.remove("invalid");
       feedbackDoc.className = "form-feedback";
-
-      checkFormerLeader(val);
       unlockStepEmail();
     } else {
       inputDoc.classList.remove("valid");
@@ -284,44 +298,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  async function checkFormerLeader(doc) {
-    try {
-      const prev = await dbService.checkPreviousRegistration(doc);
-      if (prev && prev.companions && prev.companions.length > 0) {
-        previousRegistrationFound = prev;
-        formerGroupBanner.classList.add("active");
-        
-        if (currentAvailableSlots >= prev.totalGroupSize) {
-          formerGroupText.innerHTML = `Detectamos que en tu registro anterior tenías <strong>${prev.companions.length}</strong> acompañante(s) registrado(s). ¿Deseas volver a agregarlos a todos?`;
-          btnRestoreGroup.textContent = `Volver a agregar a mis ${prev.companions.length} acompañantes`;
-        } else {
-          formerGroupText.innerHTML = `Tenías ${prev.companions.length} acompañantes antes, pero solo quedan <strong>${Math.max(0, currentAvailableSlots - 1)}</strong> vacantes adicionales disponibles.`;
-          btnRestoreGroup.textContent = `Agregar acompañantes disponibles`;
-        }
-      } else {
-        formerGroupBanner.classList.remove("active");
-      }
-    } catch (e) {}
-  }
-
-  if (btnRestoreGroup) {
-    btnRestoreGroup.addEventListener("click", () => {
-      if (!previousRegistrationFound) return;
-      const allowedCount = Math.min(previousRegistrationFound.companions.length, Math.max(0, currentAvailableSlots - 1));
-      companionsList.innerHTML = "";
-      companionCount = 0;
-
-      for (let i = 0; i < allowedCount; i++) {
-        const c = previousRegistrationFound.companions[i];
-        addCompanionCard(c.name, c.email);
-      }
-      companionsSection.classList.add("active");
-      formerGroupBanner.classList.remove("active");
-      window.showTopNotice("Acompañantes cargados. Por favor ingresa el documento de cada uno.", "info", 3500);
-      updateCompanionButtonVisibility();
-    });
-  }
-
   function unlockStepEmail() {
     stepEmail.classList.remove("locked");
     inputEmail.removeAttribute("disabled");
@@ -332,7 +308,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     inputEmail.setAttribute("disabled", "true");
     inputEmail.classList.remove("valid", "invalid");
     feedbackEmail.className = "form-feedback";
-    companionsSection.classList.remove("active");
     btnSubmitRegistration.setAttribute("disabled", "true");
   }
 
@@ -356,7 +331,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!emailRegex.test(val)) {
       inputEmail.classList.remove("valid");
       feedbackEmail.className = "form-feedback";
-      updateCompanionButtonVisibility();
+      btnSubmitRegistration.setAttribute("disabled", "true");
       return;
     }
 
@@ -365,103 +340,23 @@ document.addEventListener("DOMContentLoaded", async () => {
       inputEmail.classList.add("valid");
       inputEmail.classList.remove("invalid");
       feedbackEmail.className = "form-feedback";
-      onLeaderDataComplete();
+      btnSubmitRegistration.removeAttribute("disabled");
     } else if (domain && domain.endsWith(".com")) {
       inputEmail.classList.add("invalid");
       feedbackEmail.className = "form-feedback feedback-warning active";
       feedbackEmail.textContent = "Usa tu correo personal para evitar restricciones de dominios corporativos.";
-      updateCompanionButtonVisibility();
+      btnSubmitRegistration.setAttribute("disabled", "true");
     } else {
       inputEmail.classList.add("invalid");
       feedbackEmail.className = "form-feedback feedback-error active";
       feedbackEmail.textContent = "Por favor ingresa un correo válido (Gmail, Hotmail, Yahoo, Outlook, iCloud).";
-      updateCompanionButtonVisibility();
+      btnSubmitRegistration.setAttribute("disabled", "true");
     }
   });
-
-  function onLeaderDataComplete() {
-    companionsSection.classList.add("active");
-    btnSubmitRegistration.removeAttribute("disabled");
-    updateCompanionButtonVisibility();
-  }
-
-  // ==========================================
-  // GESTIÓN DE ACOMPAÑANTES
-  // ==========================================
-
-  function updateCompanionButtonVisibility() {
-    const occupiedByThisForm = 1 + companionCount;
-    const canAddMore = (currentAvailableSlots - occupiedByThisForm) > 0;
-
-    if (canAddMore) {
-      btnAddCompanion.style.display = "flex";
-      btnAddCompanion.removeAttribute("disabled");
-    } else {
-      btnAddCompanion.style.display = "none";
-    }
-  }
-
-  btnAddCompanion.addEventListener("click", async () => {
-    window.showTopNotice("Verificando cupos libres...", "loading");
-    const stats = await dbService.getVacanciesCount();
-    currentAvailableSlots = stats.available;
-    window.hideTopNotice();
-
-    const occupiedByThisForm = 1 + companionCount;
-    if (currentAvailableSlots <= occupiedByThisForm) {
-      window.showTopNotice("No hay más vacantes libres para agregar otro acompañante.", "warning", 3500);
-      updateCompanionButtonVisibility();
-      return;
-    }
-
-    await dbService.lockSlotTemporarily(`${currentLockId}-comp-${companionCount + 1}`);
-    addCompanionCard();
-  });
-
-  function addCompanionCard(initialName = "", initialEmail = "") {
-    companionCount++;
-    const compIndex = companionCount;
-
-    const card = document.createElement("div");
-    card.className = "companion-card";
-    card.id = `companion-card-${compIndex}`;
-
-    card.innerHTML = `
-      <div class="companion-card-header">
-        <span class="companion-badge">Acompañante #${compIndex}</span>
-        <button type="button" class="btn-remove-companion" data-index="${compIndex}">✕ Quitar</button>
-      </div>
-      <div class="companion-field">
-        <label class="form-label">Nombre Completo del Acompañante</label>
-        <input type="text" class="companion-input comp-name" placeholder="Solo letras y espacios" value="${escapeHtml(initialName)}" required>
-      </div>
-      <div class="companion-field">
-        <label class="form-label">Número de Documento</label>
-        <input type="text" inputmode="numeric" class="companion-input comp-doc" placeholder="Solo dígitos numéricos" required>
-      </div>
-      <div class="companion-field">
-        <label class="form-label">Correo Electrónico (o del tutor si es menor)</label>
-        <input type="email" class="companion-input comp-email" placeholder="ejemplo@gmail.com" value="${escapeHtml(initialEmail)}">
-      </div>
-      <div class="comp-feedback form-feedback"></div>
-    `;
-
-    companionsList.appendChild(card);
-
-    const removeBtn = card.querySelector(".btn-remove-companion");
-    removeBtn.addEventListener("click", () => {
-      card.remove();
-      companionCount--;
-      updateCompanionButtonVisibility();
-    });
-
-    updateCompanionButtonVisibility();
-  }
 
   // ==========================================
   // ENVÍO FINAL Y REGISTRO ATÓMICO EN GITHUB
   // ==========================================
-
   rsvpForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -474,46 +369,18 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    const companionCards = companionsList.querySelectorAll(".companion-card");
-    const companions = [];
-
-    for (const card of companionCards) {
-      const cName = card.querySelector(".comp-name").value.trim();
-      const cDoc = card.querySelector(".comp-doc").value.trim();
-      const cEmail = card.querySelector(".comp-email").value.trim() || leaderEmail;
-      const feedback = card.querySelector(".comp-feedback");
-
-      if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]{3,60}$/.test(cName)) {
-        feedback.className = "comp-feedback form-feedback feedback-error active";
-        feedback.textContent = "El nombre del acompañante solo debe tener letras.";
-        return;
-      }
-
-      if (!/^\d{5,15}$/.test(cDoc)) {
-        feedback.className = "comp-feedback form-feedback feedback-error active";
-        feedback.textContent = "El documento del acompañante solo debe contener números.";
-        return;
-      }
-
-      companions.push({
-        name: cName,
-        document: cDoc,
-        email: cEmail
-      });
-    }
-
     // Transacción Atómica con Notificación Visual Superior
     btnSubmitRegistration.setAttribute("disabled", "true");
     const originalHtml = btnSubmitRegistration.innerHTML;
 
-    btnSubmitRegistration.innerHTML = `<span class="spinner" style="width:16px;height:16px;border-width:2px;margin-right:10px;vertical-align:middle;"></span> Generando tu vacante en GitHub...`;
-    window.showTopNotice("Generando tu vacante y guardando en GitHub...", "loading");
+    btnSubmitRegistration.innerHTML = `<span class="spinner" style="width:16px;height:16px;border-width:2px;margin-right:10px;vertical-align:middle;"></span> Guardando tu cupo en GitHub...`;
+    window.showTopNotice("Confirmando tu asistencia y reservando tu puesto en GitHub...", "loading");
 
     try {
-      // 1. INYECCIÓN ATÓMICA EN GITHUB Y VALIDACIÓN TRANSACCIONAL
+      // 1. INYECCIÓN ATÓMICA EN GITHUB Y VALIDACIÓN TRANSACCIONAL (Sin acompañantes desde la web pública)
       const result = await dbService.registerGuest(
         { name: leaderName, document: leaderDoc, email: leaderEmail }, 
-        companions, 
+        [], 
         currentLockId
       );
 
@@ -560,19 +427,44 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ==========================================
   // RENDERIZADO DEL PASE DIGITAL VIP
   // ==========================================
+  // ==========================================
+  // RENDERIZADO DEL PASE DIGITAL VIP Y SINCRONIZACIÓN EN TIEMPO REAL
+  // ==========================================
+  let activeRealtimeListener = null;
+
   async function renderVipPass(cookieData) {
     if (!vipPassSection) return;
 
     if (mainRsvpBtn) mainRsvpBtn.style.display = "none";
     const statusContainer = document.getElementById("vacancies-bar-container");
     if (statusContainer) statusContainer.style.display = "none";
+    const deadlineBanner = document.getElementById("rsvp-deadline-banner");
+    if (deadlineBanner) deadlineBanner.style.display = "none";
+    const deadlineNotice = document.getElementById("deadline-expired-notice");
+    if (deadlineNotice) deadlineNotice.style.display = "none";
 
     let checkedIn = false;
+    let groupCompanions = cookieData.companions || [];
+
     try {
       const db = await dbService.fetchDatabase();
-      const slotObj = db.slots.find(s => s && s.guest && s.guest.code === cookieData.code);
-      if (slotObj && slotObj.guest && slotObj.guest.checked_in) {
-        checkedIn = true;
+      const slotObj = (db.slots || []).find(s => s && s.guest && s.guest.code === cookieData.code);
+      if (slotObj && slotObj.guest) {
+        if (slotObj.guest.checked_in) {
+          checkedIn = true;
+        }
+        // Buscar acompañantes asignados por el Admin en su mismo núcleo o grupo
+        if (slotObj.guest.group_id) {
+          const compSlots = db.slots.filter(s => s && s.guest && s.guest.group_id === slotObj.guest.group_id && s.guest.code !== slotObj.guest.code);
+          if (compSlots.length > 0) {
+            groupCompanions = compSlots.map(s => ({
+              code: s.guest.code,
+              name: s.guest.name,
+              slot_number: s.slot,
+              checked_in: s.guest.checked_in
+            }));
+          }
+        }
       }
     } catch (e) {}
 
@@ -580,15 +472,33 @@ document.addEventListener("DOMContentLoaded", async () => {
     
     if (checkedIn) {
       vipPassSection.innerHTML = `
-        <div class="vip-pass-badge" style="background: linear-gradient(90deg, #198754, #20c997); color: #fff;">
-          ACCESO AUTORIZADO
+        <div class="vip-pass-badge" style="background: linear-gradient(90deg, #198754, #20c997); color: #fff; box-shadow: 0 0 25px rgba(32, 201, 151, 0.6);">
+          ✨ ACCESO AUTORIZADO ✨
         </div>
-        <h2 class="vip-guest-name">${escapeHtml(cookieData.name)}</h2>
-        <div class="vip-slot-info" style="color: #2ecc71;">Puesto Asignado: #${cookieData.slot_number} de 90</div>
+        <h2 class="vip-guest-name" style="font-size: 34px; color: #fff; text-shadow: 0 0 20px rgba(242, 73, 231, 0.7);">${escapeHtml(cookieData.name)}</h2>
+        <div class="vip-slot-info" style="color: #2ecc71; font-weight: bold; font-size: 18px;">Puesto Oficial Asignado: #${cookieData.slot_number} de 90</div>
         
-        <div class="checked-in-banner" style="margin-top: 30px; border: 2px solid #2ecc71; box-shadow: 0 0 30px rgba(40, 167, 69, 0.4);">
-          <h3 style="margin-bottom:10px; font-size: 22px;">✨ ¡Bienvenid@ a la Fiesta! ✨</h3>
-          <p style="font-size: 14px; font-weight: normal;">Tu acceso ha sido verificado. Disfruta de una noche inolvidable celebrando los 15 Años de Sara Sofía.</p>
+        <div class="checked-in-banner" style="margin-top: 25px; border: 2px solid #2ecc71; box-shadow: 0 0 40px rgba(40, 167, 69, 0.6); padding: 25px 20px; border-radius: 20px; background: linear-gradient(135deg, rgba(25, 135, 84, 0.35) 0%, rgba(32, 201, 151, 0.2) 100%); backdrop-filter: blur(8px);">
+          <div style="font-size: 36px; margin-bottom: 8px;">👑 🎉 ✨</div>
+          <h3 style="margin-bottom: 12px; font-size: 26px; font-family: var(--font-serif); color: #fff2b2; text-shadow: 0 0 15px rgba(243, 202, 101, 0.5);">
+            ¡Bienvenid@ a la Gran Fiesta!
+          </h3>
+          <p style="font-size: 15px; font-weight: 500; color: #f7eafc; line-height: 1.5; max-width: 480px; margin: 0 auto;">
+            Tu ingreso ha sido registrado y verificado por la recepción. Pasa adelante y disfruta de una noche mágica e inolvidable junto a Sara Sofía.
+          </p>
+        </div>
+
+        ${groupCompanions && groupCompanions.length > 0 ? `
+        <div style="background: rgba(255,255,255,0.06); padding: 16px; border-radius: 14px; margin-top: 25px; text-align: left; border: 1px solid rgba(242, 73, 231, 0.25);">
+          <h4 style="color: var(--gold-light); margin-bottom: 8px; font-size: 13px;">👥 Tus Acompañantes en Mesa:</h4>
+          <ul style="font-size: 13px; color: #ccc; padding-left: 20px; margin: 0; line-height: 1.6;">
+            ${groupCompanions.map(c => `<li><strong>${escapeHtml(c.name)}</strong> (Puesto #${c.slot_number}) ${c.checked_in ? '<span style="color:#2ecc71; font-weight:bold;">✓ Ya Ingresó</span>' : '<span style="color:#aaa;">(Por ingresar)</span>'}</li>`).join('')}
+          </ul>
+        </div>
+        ` : ''}
+
+        <div class="vip-actions" style="margin-top: 25px;">
+          <a href="${config.EVENT.GOOGLE_CALENDAR_URL}" target="_blank" class="btn-calendar-pass">📅 Agendar en Google Calendar</a>
         </div>
       `;
       triggerGuestConfetti();
@@ -601,13 +511,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         
         <div class="qr-code-wrapper" id="pass-qrcode-container"></div>
         <div class="vip-pass-code">${escapeHtml(cookieData.code)}</div>
-        <p style="font-size: 11px; color: #aaa; margin-bottom: 20px;">Presenta este código QR en la entrada el 20 de Diciembre de 2026</p>
+        <p style="font-size: 12px; color: var(--gold-light); margin-bottom: 20px;">
+          Presenta este código QR en la recepción el 20 de Diciembre de 2026
+        </p>
         
-        ${cookieData.companions && cookieData.companions.length > 0 ? `
-        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; text-align: left;">
-          <h4 style="color: var(--gold-light); margin-bottom: 8px; font-size: 13px;">👥 Tus Acompañantes:</h4>
-          <ul style="font-size: 12px; color: #ccc; padding-left: 20px; margin: 0;">
-            ${cookieData.companions.map(c => `<li><strong>${escapeHtml(c.name)}</strong> (Puesto #${c.slot_number} - Código: ${escapeHtml(c.code)})</li>`).join('')}
+        ${groupCompanions && groupCompanions.length > 0 ? `
+        <div style="background: rgba(255,255,255,0.06); padding: 16px; border-radius: 14px; margin-bottom: 20px; text-align: left; border: 1px solid rgba(242, 73, 231, 0.25);">
+          <h4 style="color: var(--gold-light); margin-bottom: 8px; font-size: 13px;">👥 Acompañantes Asignados por el Administrador:</h4>
+          <ul style="font-size: 12.5px; color: #ccc; padding-left: 20px; margin: 0; line-height: 1.6;">
+            ${groupCompanions.map(c => `<li><strong>${escapeHtml(c.name)}</strong> (Puesto #${c.slot_number} - Código: <code>${escapeHtml(c.code)}</code>)</li>`).join('')}
           </ul>
         </div>
         ` : ''}
@@ -643,7 +555,173 @@ document.addEventListener("DOMContentLoaded", async () => {
           });
         }
       }, 100);
+
+      // Iniciar la escucha en tiempo real multicapa (SSE, WebSockets, Polling, Focus)
+      setupRealtimeCheckInListener(cookieData.code, cookieData);
     }
+  }
+
+  // ==========================================
+  // MOTOR DE SINCRONIZACIÓN EN TIEMPO REAL (AL ESCANEAR QR)
+  // Conecta el celular del invitado con la recepción para actualizar en vivo
+  // ==========================================
+  function setupRealtimeCheckInListener(guestCode, cookieData) {
+    if (activeRealtimeListener) {
+      activeRealtimeListener.cleanup();
+      activeRealtimeListener = null;
+    }
+
+    const cleanCode = (guestCode || "").trim().toUpperCase();
+    let isTriggered = false;
+
+    function onCheckInConfirmed(sourceName) {
+      if (isTriggered) return;
+      isTriggered = true;
+      console.log(`[Realtime Sync] ¡Ingreso confirmado vía ${sourceName}! Actualizando pantalla...`);
+      if (activeRealtimeListener) {
+        activeRealtimeListener.cleanup();
+        activeRealtimeListener = null;
+      }
+      triggerGuestLiveCelebration(cookieData);
+    }
+
+    // 1. BroadcastChannel (Para pestañas / ventanas en el mismo navegador)
+    let bc = null;
+    try {
+      if (window.BroadcastChannel) {
+        bc = new BroadcastChannel("sara15_realtime_channel");
+        bc.onmessage = (e) => {
+          if (e.data && e.data.type === "CHECKED_IN" && e.data.code === cleanCode) {
+            onCheckInConfirmed("BroadcastChannel");
+          } else if (e.data && e.data.type === "COMPANIONS_UPDATED" && e.data.leaderCode === cleanCode) {
+            renderVipPass(cookieData);
+          }
+        };
+      }
+    } catch (e) {}
+
+    // 2. Storage Event (Para sincronizar ventanas/pestañas en el mismo dispositivo)
+    const onStorage = (e) => {
+      if (e.key === "sara15_last_checkin_signal" && e.newValue) {
+        try {
+          const data = JSON.parse(e.newValue);
+          if (data && data.code === cleanCode) {
+            onCheckInConfirmed("StorageEvent");
+          }
+        } catch (err) {}
+      }
+    };
+    window.addEventListener("storage", onStorage);
+
+    // 3. NTFY.sh Realtime Server-Sent Events (SSE) Cross-Device
+    const prefix = (config.REALTIME && config.REALTIME.NTFY_PREFIX) || "sara15_checkin_";
+    let eventSource = null;
+    try {
+      if (window.EventSource) {
+        eventSource = new EventSource(`https://ntfy.sh/${prefix}${cleanCode}/sse`);
+        eventSource.onmessage = (evt) => {
+          try {
+            const data = JSON.parse(evt.data);
+            if (data && data.code === cleanCode) {
+              onCheckInConfirmed("NTFY-SSE");
+            }
+          } catch (err) {
+            if (evt.data && evt.data.includes("CHECKED_IN")) {
+              onCheckInConfirmed("NTFY-SSE-Raw");
+            }
+          }
+        };
+      }
+    } catch (e) {}
+
+    // 4. NTFY.sh WebSocket Fallback
+    let ws = null;
+    try {
+      ws = new WebSocket(`wss://ntfy.sh/${prefix}${cleanCode}/ws`);
+      ws.onmessage = (evt) => {
+        try {
+          const data = JSON.parse(evt.data);
+          if (data && data.code === cleanCode) {
+            onCheckInConfirmed("NTFY-WebSocket");
+          }
+        } catch (err) {
+          if (evt.data && evt.data.includes("CHECKED_IN")) {
+            onCheckInConfirmed("NTFY-WS-Raw");
+          }
+        }
+      };
+    } catch (e) {}
+
+    // 5. Polling de Respaldo de Alta Frecuencia (cada 2.5s)
+    const pollInterval = setInterval(async () => {
+      try {
+        const db = await dbService.fetchDatabase(true);
+        const slot = (db.slots || []).find(s => s && s.guest && s.guest.code === cleanCode);
+        if (slot && slot.guest && slot.guest.checked_in) {
+          onCheckInConfirmed("Fast-Polling");
+        }
+      } catch (e) {}
+    }, 2500);
+
+    // 6. Al regresar a la página (por si mostró foto del QR o abrió otra app)
+    const onVisibilityOrFocus = async () => {
+      if (document.visibilityState === "visible") {
+        try {
+          const db = await dbService.fetchDatabase(true);
+          const slot = (db.slots || []).find(s => s && s.guest && s.guest.code === cleanCode);
+          if (slot && slot.guest && slot.guest.checked_in) {
+            onCheckInConfirmed("VisibilityChange");
+          }
+        } catch (e) {}
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibilityOrFocus);
+    window.addEventListener("focus", onVisibilityOrFocus);
+
+    activeRealtimeListener = {
+      cleanup: () => {
+        if (bc) { try { bc.close(); } catch (e) {} }
+        window.removeEventListener("storage", onStorage);
+        if (eventSource) { try { eventSource.close(); } catch (e) {} }
+        if (ws) { try { ws.close(); } catch (e) {} }
+        clearInterval(pollInterval);
+        document.removeEventListener("visibilitychange", onVisibilityOrFocus);
+        window.removeEventListener("focus", onVisibilityOrFocus);
+      }
+    };
+  }
+
+  // ==========================================
+  // CELEBRACIÓN Y TRANSFORMACIÓN DINÁMICA DE ENTRADA
+  // ==========================================
+  function triggerGuestLiveCelebration(cookieData) {
+    if (!vipPassSection) return;
+
+    // Actualizar cookie local de asistencia a checked_in
+    cookieData.checked_in = true;
+    dbService.setAttendanceCookie(cookieData);
+
+    // Vibración háptica en smartphones
+    if (navigator.vibrate) {
+      try { navigator.vibrate([150, 80, 150, 80, 300]); } catch (e) {}
+    }
+
+    // Animación suave de transición
+    vipPassSection.style.transition = "all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+    vipPassSection.style.transform = "scale(0.95)";
+    vipPassSection.style.opacity = "0.7";
+
+    setTimeout(() => {
+      renderVipPass(cookieData);
+      vipPassSection.style.transform = "scale(1)";
+      vipPassSection.style.opacity = "1";
+
+      // Doble ráfaga de confeti estelar
+      if (window.triggerGuestConfetti) {
+        window.triggerGuestConfetti();
+        setTimeout(() => window.triggerGuestConfetti(), 1400);
+      }
+    }, 450);
   }
 
   // ==========================================

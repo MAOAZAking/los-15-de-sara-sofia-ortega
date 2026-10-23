@@ -281,7 +281,13 @@ class DatabaseService {
   // SI GITHUB NO CONFIRMA EL COMMIT CON ÉXITO
   // ==========================================
 
-  async registerGuest(leaderData, companions = [], tempLockId = null) {
+  async registerGuest(leaderData, companions = [], tempLockId = null, options = {}) {
+    // Validar fecha límite de registros (25 de Noviembre de 2026 inclusive)
+    const deadlineIso = (this.config.EVENT && this.config.EVENT.RSVP_DEADLINE_ISO) || "2026-11-25T23:59:59-05:00";
+    if (!options.isAdmin && Date.now() > new Date(deadlineIso).getTime()) {
+      throw new Error(`El plazo oficial para confirmar asistencia finalizó el ${this.config.EVENT.RSVP_DEADLINE_STR || "25 de Noviembre de 2026"}.`);
+    }
+
     const totalPeople = 1 + companions.length;
     const db = await this.fetchDatabase(true);
     const stats = this.calculateVacancies(db);
@@ -758,10 +764,354 @@ class DatabaseService {
 
     this.saveLocalCache(db);
 
+    // NOTIFICACIÓN EN TIEMPO REAL ULTRA RÁPIDA (NTFY.SH + BROADCAST + STORAGE)
+    this.notifyRealtimeCheckIn(cleanCode, targetSlot.guest, targetSlot.slot);
+
     return {
       success: true,
       guest: targetSlot.guest,
       slot: targetSlot.slot
+    };
+  }
+
+  // ==========================================
+  // DISPATCHER DE SINCRONIZACIÓN EN TIEMPO REAL
+  // Al escanear el QR, notifica inmediatamente (<300ms) al teléfono del invitado
+  // ==========================================
+  notifyRealtimeCheckIn(code, guest, slot) {
+    const cleanCode = (code || "").trim().toUpperCase();
+    const payload = {
+      type: "CHECKED_IN",
+      code: cleanCode,
+      name: guest ? guest.name : "",
+      slot: slot || 0,
+      timestamp: Date.now()
+    };
+
+    // 1. BroadcastChannel (Para sincronización entre pestañas / ventanas en el mismo navegador)
+    try {
+      if (window.BroadcastChannel) {
+        const bc = new BroadcastChannel("sara15_realtime_channel");
+        bc.postMessage(payload);
+        setTimeout(() => bc.close(), 1000);
+      }
+    } catch (e) {}
+
+    // 2. localStorage Event (Para actualizar todas las pestañas de este dispositivo de inmediato)
+    try {
+      localStorage.setItem("sara15_last_checkin_signal", JSON.stringify(payload));
+    } catch (e) {}
+
+    // 3. NTFY.sh Real-Time Cross-Device Push (Para actualizar el celular del invitado en tiempo real <300ms)
+    try {
+      const prefix = (this.config.REALTIME && this.config.REALTIME.NTFY_PREFIX) || "sara15_checkin_";
+      fetch(`https://ntfy.sh/${prefix}${cleanCode}`, {
+        method: "POST",
+        headers: { "Title": "CHECKED_IN", "Priority": "high" },
+        body: JSON.stringify(payload)
+      }).catch(err => console.warn("Aviso realtime push:", err));
+    } catch (e) {}
+  }
+
+  // ==========================================
+  // REGISTRO DE INVITADO DESDE EL ADMIN DASHBOARD
+  // Privilegio exclusivo admin: SOLO EL NOMBRE ES OBLIGATORIO
+  // Puede ser invitado suelto o cabeza de grupo con acompañantes
+  // ==========================================
+  async adminRegisterGuest(guestData, companionNames = []) {
+    if (!guestData || !guestData.name || !guestData.name.trim()) {
+      throw new Error("El nombre del invitado es obligatorio.");
+    }
+
+    const cleanName = guestData.name.trim();
+    const cleanDoc = (guestData.document && guestData.document.trim()) 
+      ? guestData.document.trim() 
+      : `ADM-${Date.now().toString().slice(-6)}`;
+    const cleanEmail = (guestData.email && guestData.email.trim()) 
+      ? guestData.email.trim() 
+      : "";
+
+    // Filtrar acompañantes válidos (solo se necesita el nombre)
+    const validCompanionNames = companionNames
+      .map(c => (typeof c === "string" ? c : (c && c.name ? c.name : "")).trim())
+      .filter(n => n.length > 0);
+
+    const totalSeats = 1 + validCompanionNames.length;
+    const db = await this.fetchDatabase(true);
+    const stats = this.calculateVacancies(db);
+
+    if (stats.available < totalSeats) {
+      throw new Error(`No hay suficientes cupos libres. Disponibles: ${stats.available}, Solicitados: ${totalSeats}.`);
+    }
+
+    // Buscar puestos libres
+    const availableSlots = [];
+    for (let i = 0; i < db.slots.length; i++) {
+      if (db.slots[i].guest === null) {
+        availableSlots.push(i);
+        if (availableSlots.length === totalSeats) break;
+      }
+    }
+
+    if (availableSlots.length < totalSeats) {
+      throw new Error("No se encontraron suficientes puestos libres disponibles.");
+    }
+
+    const groupId = "GRP-ADM-" + Date.now().toString(36).toUpperCase() + "-" + Math.random().toString(36).substring(2, 5).toUpperCase();
+    const nowIso = new Date().toISOString();
+
+    // 1. Asignar líder / invitado principal
+    const leaderSlotIndex = availableSlots[0];
+    const leaderGuest = {
+      code: this.generateUniqueCode(),
+      name: cleanName,
+      document: cleanDoc,
+      email: cleanEmail,
+      is_leader: true,
+      group_id: groupId,
+      leader_name: cleanName,
+      leader_document: cleanDoc,
+      registered_at: nowIso,
+      slot_number: leaderSlotIndex + 1,
+      checked_in: false,
+      checked_in_at: null
+    };
+
+    const updatedDb = JSON.parse(JSON.stringify(db));
+    updatedDb.slots[leaderSlotIndex].guest = leaderGuest;
+
+    // 2. Asignar acompañantes (Solo nombre requerido para admin)
+    const registeredCompanions = [];
+    for (let c = 0; c < validCompanionNames.length; c++) {
+      const compSlotIndex = availableSlots[c + 1];
+      const compName = validCompanionNames[c];
+      const compCode = this.generateUniqueCode();
+      const compGuest = {
+        code: compCode,
+        name: compName,
+        document: `${cleanDoc}-A${c + 1}`,
+        email: cleanEmail,
+        is_leader: false,
+        group_id: groupId,
+        leader_name: cleanName,
+        leader_document: cleanDoc,
+        registered_at: nowIso,
+        slot_number: compSlotIndex + 1,
+        checked_in: false,
+        checked_in_at: null
+      };
+      updatedDb.slots[compSlotIndex].guest = compGuest;
+      registeredCompanions.push(compGuest);
+    }
+
+    // 3. Histórico
+    if (!updatedDb.all_time_guests) updatedDb.all_time_guests = [];
+    updatedDb.all_time_guests.push({
+      ...leaderGuest,
+      status: "active",
+      companions_registered: registeredCompanions.map(c => ({
+        name: c.name,
+        document: c.document,
+        email: c.email,
+        code: c.code,
+        slot_number: c.slot_number
+      }))
+    });
+
+    for (const comp of registeredCompanions) {
+      updatedDb.all_time_guests.push({
+        ...comp,
+        status: "active"
+      });
+    }
+
+    const commitMessage = `Admin registró invitado: ${leaderGuest.name} (+${registeredCompanions.length} acompañantes, #${leaderGuest.slot_number}${registeredCompanions.length > 0 ? ', #' + registeredCompanions.map(c => c.slot_number).join(', #') : ''})`;
+
+    if (this.config.BACKEND_API_URL && this.config.BACKEND_API_URL.startsWith("http")) {
+      try {
+        const res = await fetch(this.config.BACKEND_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify({
+            action: "register",
+            commit_message: commitMessage,
+            leader: leaderGuest,
+            companions: registeredCompanions,
+            database: updatedDb
+          })
+        });
+        const data = await res.json();
+        if (!data.success) {
+          throw new Error(data.error || "GitHub rechazó el registro.");
+        }
+      } catch (err) {
+        console.warn("Aviso commit registro admin:", err);
+      }
+    }
+
+    this.saveLocalCache(updatedDb);
+
+    return {
+      success: true,
+      leader: leaderGuest,
+      companions: registeredCompanions,
+      totalRegistered: totalSeats,
+      database: updatedDb
+    };
+  }
+
+  // ==========================================
+  // AGREGAR ACOMPAÑANTES DESDE EL ADMIN DASHBOARD
+  // Privilegio exclusivo admin: SOLO EL NOMBRE ES OBLIGATORIO
+  // Agrega acompañantes anidados a una persona existente
+  // ==========================================
+  async adminAddCompanions(targetCodeOrDoc, companionNames = []) {
+    const cleanId = (targetCodeOrDoc || "").toString().trim().toUpperCase();
+    const db = await this.fetchDatabase(true);
+
+    let targetSlot = null;
+    for (const s of db.slots) {
+      if (s && s.guest) {
+        if (s.guest.code.toString().trim().toUpperCase() === cleanId ||
+            s.guest.document.toString().trim().toUpperCase() === cleanId) {
+          targetSlot = s;
+          break;
+        }
+      }
+    }
+
+    if (!targetSlot || !targetSlot.guest) {
+      throw new Error("No se encontró el invitado objetivo en la base de datos.");
+    }
+
+    const leaderGuest = targetSlot.guest;
+
+    const validCompanionNames = companionNames
+      .map(c => (typeof c === "string" ? c : (c && c.name ? c.name : "")).trim())
+      .filter(n => n.length > 0);
+
+    if (validCompanionNames.length === 0) {
+      throw new Error("Por favor escribe el nombre de al menos un acompañante.");
+    }
+
+    const stats = this.calculateVacancies(db);
+    if (stats.available < validCompanionNames.length) {
+      throw new Error(`Solo quedan ${stats.available} cupos disponibles para acompañantes.`);
+    }
+
+    // Buscar puestos libres
+    const availableSlots = [];
+    for (let i = 0; i < db.slots.length; i++) {
+      if (db.slots[i].guest === null) {
+        availableSlots.push(i);
+        if (availableSlots.length === validCompanionNames.length) break;
+      }
+    }
+
+    if (availableSlots.length < validCompanionNames.length) {
+      throw new Error("No se encontraron suficientes puestos libres disponibles.");
+    }
+
+    const updatedDb = JSON.parse(JSON.stringify(db));
+    const nowIso = new Date().toISOString();
+    const registeredCompanions = [];
+
+    // Contar cuántos acompañantes ya tenía en este grupo
+    let existingCompanionsCount = 0;
+    updatedDb.slots.forEach(s => {
+      if (s && s.guest && s.guest.group_id === leaderGuest.group_id && !s.guest.is_leader) {
+        existingCompanionsCount++;
+      }
+    });
+
+    for (let i = 0; i < validCompanionNames.length; i++) {
+      const compSlotIndex = availableSlots[i];
+      const compName = validCompanionNames[i];
+      const compCode = this.generateUniqueCode();
+      const compDoc = `${leaderGuest.document || 'ADM'}-A${existingCompanionsCount + i + 1}`;
+
+      const compGuest = {
+        code: compCode,
+        name: compName,
+        document: compDoc,
+        email: leaderGuest.email || "",
+        is_leader: false,
+        group_id: leaderGuest.group_id,
+        leader_name: leaderGuest.is_leader ? leaderGuest.name : (leaderGuest.leader_name || leaderGuest.name),
+        leader_document: leaderGuest.is_leader ? leaderGuest.document : (leaderGuest.leader_document || leaderGuest.document),
+        registered_at: nowIso,
+        slot_number: compSlotIndex + 1,
+        checked_in: false,
+        checked_in_at: null
+      };
+
+      updatedDb.slots[compSlotIndex].guest = compGuest;
+      registeredCompanions.push(compGuest);
+
+      if (!updatedDb.all_time_guests) updatedDb.all_time_guests = [];
+      updatedDb.all_time_guests.push({
+        ...compGuest,
+        status: "active"
+      });
+    }
+
+    // Actualizar registro en all_time_guests del líder si existe
+    if (updatedDb.all_time_guests) {
+      const histLeader = updatedDb.all_time_guests.find(g => g.code === leaderGuest.code);
+      if (histLeader) {
+        if (!histLeader.companions_registered) histLeader.companions_registered = [];
+        registeredCompanions.forEach(c => {
+          histLeader.companions_registered.push({
+            name: c.name,
+            document: c.document,
+            email: c.email,
+            code: c.code,
+            slot_number: c.slot_number
+          });
+        });
+      }
+    }
+
+    const commitMessage = `Admin agregó ${registeredCompanions.length} acompañante(s) a ${leaderGuest.name} (#${registeredCompanions.map(c => c.slot_number).join(', #')})`;
+
+    if (this.config.BACKEND_API_URL && this.config.BACKEND_API_URL.startsWith("http")) {
+      try {
+        const res = await fetch(this.config.BACKEND_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify({
+            action: "register",
+            commit_message: commitMessage,
+            leader: leaderGuest,
+            companions: registeredCompanions,
+            database: updatedDb
+          })
+        });
+        const data = await res.json();
+        if (!data.success) {
+          throw new Error(data.error || "GitHub rechazó la adición de acompañantes.");
+        }
+      } catch (err) {
+        console.warn("Aviso commit acompañantes admin:", err);
+      }
+    }
+
+    this.saveLocalCache(updatedDb);
+
+    // Notificar en tiempo real por si el invitado tiene la página del pase abierta
+    try {
+      if (window.BroadcastChannel) {
+        const bc = new BroadcastChannel("sara15_realtime_channel");
+        bc.postMessage({ type: "COMPANIONS_UPDATED", leaderCode: leaderGuest.code });
+        setTimeout(() => bc.close(), 1000);
+      }
+    } catch (e) {}
+
+    return {
+      success: true,
+      leader: leaderGuest,
+      companions: registeredCompanions,
+      database: updatedDb
     };
   }
 
