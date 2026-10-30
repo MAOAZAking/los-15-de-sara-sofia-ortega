@@ -12,7 +12,20 @@
   "slots": [
     {
       "slot": 1,
-      "guest": null
+      "guest": {
+        "code": "SARA15-TX778D",
+        "name": "Diana Celeste Rosa y Diego",
+        "document": "321580259",
+        "email": "ayaladiana83@gmail.com",
+        "is_leader": true,
+        "group_id": "GRP-MVU9GNAA-57Y",
+        "leader_name": "Diana Celeste Rosa y Diego",
+        "leader_document": "321580259",
+        "registered_at": "2026-10-30T00:55:41.038Z",
+        "slot_number": 1,
+        "checked_in": false,
+        "checked_in_at": null
+      }
     },
     {
       "slot": 2,
@@ -372,5 +385,22 @@
     }
   ],
   "temporary_locks": [],
-  "all_time_guests": []
+  "all_time_guests": [
+    {
+      "code": "SARA15-TX778D",
+      "name": "Diana Celeste Rosa y Diego",
+      "document": "321580259",
+      "email": "ayaladiana83@gmail.com",
+      "is_leader": true,
+      "group_id": "GRP-MVU9GNAA-57Y",
+      "leader_name": "Diana Celeste Rosa y Diego",
+      "leader_document": "321580259",
+      "registered_at": "2026-10-30T00:55:41.038Z",
+      "slot_number": 1,
+      "checked_in": false,
+      "checked_in_at": null,
+      "status": "active",
+      "companions_registered": []
+    }
+  ]
 }
