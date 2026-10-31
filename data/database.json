@@ -29,7 +29,20 @@
     },
     {
       "slot": 2,
-      "guest": null
+      "guest": {
+        "code": "SARA15-A3FQKM",
+        "name": "Selenna Sánchez Ortega",
+        "document": "1107834862",
+        "email": "selennaso2026@gmail.com",
+        "is_leader": true,
+        "group_id": "GRP-MVWUCRJC-OUX",
+        "leader_name": "Selenna Sánchez Ortega",
+        "leader_document": "1107834862",
+        "registered_at": "2026-10-31T20:16:04.200Z",
+        "slot_number": 2,
+        "checked_in": false,
+        "checked_in_at": null
+      }
     },
     {
       "slot": 3,
@@ -397,6 +410,22 @@
       "leader_document": "321580259",
       "registered_at": "2026-10-30T00:55:41.038Z",
       "slot_number": 1,
+      "checked_in": false,
+      "checked_in_at": null,
+      "status": "active",
+      "companions_registered": []
+    },
+    {
+      "code": "SARA15-A3FQKM",
+      "name": "Selenna Sánchez Ortega",
+      "document": "1107834862",
+      "email": "selennaso2026@gmail.com",
+      "is_leader": true,
+      "group_id": "GRP-MVWUCRJC-OUX",
+      "leader_name": "Selenna Sánchez Ortega",
+      "leader_document": "1107834862",
+      "registered_at": "2026-10-31T20:16:04.200Z",
+      "slot_number": 2,
       "checked_in": false,
       "checked_in_at": null,
       "status": "active",
