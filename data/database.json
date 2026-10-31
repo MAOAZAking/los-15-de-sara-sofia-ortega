@@ -80,7 +80,20 @@
     },
     {
       "slot": 5,
-      "guest": null
+      "guest": {
+        "code": "SARA15-PCD42J",
+        "name": "Johnnatan Ruiz Ortega",
+        "document": "1130651254",
+        "email": "ruizortegajohnnatan@gmail.com",
+        "is_leader": true,
+        "group_id": "GRP-MVWWRV5R-S0X",
+        "leader_name": "Johnnatan Ruiz Ortega",
+        "leader_document": "1130651254",
+        "registered_at": "2026-10-31T21:23:47.967Z",
+        "slot_number": 5,
+        "checked_in": false,
+        "checked_in_at": null
+      }
     },
     {
       "slot": 6,
@@ -484,6 +497,22 @@
       "leader_document": "1143996928",
       "registered_at": "2026-10-31T20:46:06.582Z",
       "slot_number": 4,
+      "checked_in": false,
+      "checked_in_at": null,
+      "status": "active",
+      "companions_registered": []
+    },
+    {
+      "code": "SARA15-PCD42J",
+      "name": "Johnnatan Ruiz Ortega",
+      "document": "1130651254",
+      "email": "ruizortegajohnnatan@gmail.com",
+      "is_leader": true,
+      "group_id": "GRP-MVWWRV5R-S0X",
+      "leader_name": "Johnnatan Ruiz Ortega",
+      "leader_document": "1130651254",
+      "registered_at": "2026-10-31T21:23:47.967Z",
+      "slot_number": 5,
       "checked_in": false,
       "checked_in_at": null,
       "status": "active",
