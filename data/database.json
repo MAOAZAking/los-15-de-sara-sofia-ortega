@@ -131,7 +131,20 @@
     },
     {
       "slot": 8,
-      "guest": null
+      "guest": {
+        "code": "SARA15-J9JP8G",
+        "name": "JUAN CARLOS CORTES CORTES",
+        "document": "1111666538",
+        "email": "juancarloscort333@gmail.com",
+        "is_leader": true,
+        "group_id": "GRP-MVX2CCKM-G6B",
+        "leader_name": "JUAN CARLOS CORTES CORTES",
+        "leader_document": "1111666538",
+        "registered_at": "2026-10-31T23:59:41.734Z",
+        "slot_number": 8,
+        "checked_in": false,
+        "checked_in_at": null
+      }
     },
     {
       "slot": 9,
@@ -571,6 +584,22 @@
       "leader_document": "3014169991",
       "registered_at": "2026-10-31T23:56:24.010Z",
       "slot_number": 7,
+      "checked_in": false,
+      "checked_in_at": null,
+      "status": "active",
+      "companions_registered": []
+    },
+    {
+      "code": "SARA15-J9JP8G",
+      "name": "JUAN CARLOS CORTES CORTES",
+      "document": "1111666538",
+      "email": "juancarloscort333@gmail.com",
+      "is_leader": true,
+      "group_id": "GRP-MVX2CCKM-G6B",
+      "leader_name": "JUAN CARLOS CORTES CORTES",
+      "leader_document": "1111666538",
+      "registered_at": "2026-10-31T23:59:41.734Z",
+      "slot_number": 8,
       "checked_in": false,
       "checked_in_at": null,
       "status": "active",
