@@ -63,7 +63,20 @@
     },
     {
       "slot": 4,
-      "guest": null
+      "guest": {
+        "code": "SARA15-FUT98Z",
+        "name": "Nathaly Ayala quiñonez",
+        "document": "1143996928",
+        "email": "nathalyayalaquinonez@gmail.com",
+        "is_leader": true,
+        "group_id": "GRP-MVWVFE9I-LSS",
+        "leader_name": "Nathaly Ayala quiñonez",
+        "leader_document": "1143996928",
+        "registered_at": "2026-10-31T20:46:06.582Z",
+        "slot_number": 4,
+        "checked_in": false,
+        "checked_in_at": null
+      }
     },
     {
       "slot": 5,
@@ -455,6 +468,22 @@
       "leader_document": "1151936169",
       "registered_at": "2026-10-31T20:33:53.601Z",
       "slot_number": 3,
+      "checked_in": false,
+      "checked_in_at": null,
+      "status": "active",
+      "companions_registered": []
+    },
+    {
+      "code": "SARA15-FUT98Z",
+      "name": "Nathaly Ayala quiñonez",
+      "document": "1143996928",
+      "email": "nathalyayalaquinonez@gmail.com",
+      "is_leader": true,
+      "group_id": "GRP-MVWVFE9I-LSS",
+      "leader_name": "Nathaly Ayala quiñonez",
+      "leader_document": "1143996928",
+      "registered_at": "2026-10-31T20:46:06.582Z",
+      "slot_number": 4,
       "checked_in": false,
       "checked_in_at": null,
       "status": "active",
