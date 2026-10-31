@@ -97,7 +97,20 @@
     },
     {
       "slot": 6,
-      "guest": null
+      "guest": {
+        "code": "SARA15-QXDVZU",
+        "name": "Martha Cecilia Vera",
+        "document": "66858305",
+        "email": "marthacv0929@gmail.com",
+        "is_leader": true,
+        "group_id": "GRP-MVWYFIW4-8UU",
+        "leader_name": "Martha Cecilia Vera",
+        "leader_document": "66858305",
+        "registered_at": "2026-10-31T22:10:11.428Z",
+        "slot_number": 6,
+        "checked_in": false,
+        "checked_in_at": null
+      }
     },
     {
       "slot": 7,
@@ -513,6 +526,22 @@
       "leader_document": "1130651254",
       "registered_at": "2026-10-31T21:23:47.967Z",
       "slot_number": 5,
+      "checked_in": false,
+      "checked_in_at": null,
+      "status": "active",
+      "companions_registered": []
+    },
+    {
+      "code": "SARA15-QXDVZU",
+      "name": "Martha Cecilia Vera",
+      "document": "66858305",
+      "email": "marthacv0929@gmail.com",
+      "is_leader": true,
+      "group_id": "GRP-MVWYFIW4-8UU",
+      "leader_name": "Martha Cecilia Vera",
+      "leader_document": "66858305",
+      "registered_at": "2026-10-31T22:10:11.428Z",
+      "slot_number": 6,
       "checked_in": false,
       "checked_in_at": null,
       "status": "active",
