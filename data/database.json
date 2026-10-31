@@ -46,7 +46,20 @@
     },
     {
       "slot": 3,
-      "guest": null
+      "guest": {
+        "code": "SARA15-N7K4ES",
+        "name": "Ximena Solarte",
+        "document": "1151936169",
+        "email": "xsolarte@hotmail.com",
+        "is_leader": true,
+        "group_id": "GRP-MVWUZOOX-NAT",
+        "leader_name": "Ximena Solarte",
+        "leader_document": "1151936169",
+        "registered_at": "2026-10-31T20:33:53.601Z",
+        "slot_number": 3,
+        "checked_in": false,
+        "checked_in_at": null
+      }
     },
     {
       "slot": 4,
@@ -428,6 +441,22 @@
       "slot_number": 2,
       "checked_in": true,
       "checked_in_at": "2026-10-31T20:17:12.056Z",
+      "status": "active",
+      "companions_registered": []
+    },
+    {
+      "code": "SARA15-N7K4ES",
+      "name": "Ximena Solarte",
+      "document": "1151936169",
+      "email": "xsolarte@hotmail.com",
+      "is_leader": true,
+      "group_id": "GRP-MVWUZOOX-NAT",
+      "leader_name": "Ximena Solarte",
+      "leader_document": "1151936169",
+      "registered_at": "2026-10-31T20:33:53.601Z",
+      "slot_number": 3,
+      "checked_in": false,
+      "checked_in_at": null,
       "status": "active",
       "companions_registered": []
     }
