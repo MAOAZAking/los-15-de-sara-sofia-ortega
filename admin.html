@@ -49,6 +49,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/form.css">
   <link rel="stylesheet" href="css/admin.css">
 </head>
 <body class="admin-body">
@@ -300,6 +301,9 @@
 
         <!-- Botones de Acción en Modo Normal -->
         <div class="guest-detail-actions" id="detail-normal-actions">
+          <button type="button" class="btn-action-edit" id="btn-open-edit-mode">
+            ✏️ Editar Datos
+          </button>
           <button type="button" class="btn-action-add-comp" id="btn-open-add-comp-mode">
             👥 Agregar Acompañantes
           </button>
@@ -323,7 +327,7 @@
             Asignando a: <strong id="add-comp-target-name"></strong>
           </p>
           <div class="admin-privilege-note">
-            ⭐ <strong>Privilegio de Administrador:</strong> Solo se necesita el nombre de cada acompañante, ningún otro dato es requerido.
+            ⭐ <strong>Privilegio de Administrador:</strong> Solo se necesita el nombre de cada acompañante, ningún otro dato es requerido. El invitado actual quedará como Líder y los nuevos como sus acompañantes.
           </div>
         </div>
 
@@ -350,6 +354,58 @@
   </div>
 
   <!-- ==========================================================================
+       MODAL PARA EDITAR DATOS DEL INVITADO (NOMBRE, DOCUMENTO, CORREO)
+       ========================================================================== -->
+  <div class="modal-overlay" id="admin-edit-guest-modal">
+    <div class="modal-content">
+      <button type="button" class="modal-close" id="btn-close-edit-guest" title="Cerrar">&times;</button>
+      
+      <div class="modal-header">
+        <div style="font-size: 28px; margin-bottom: 5px;">✏️</div>
+        <h2 class="modal-title">Editar Invitado</h2>
+        <p class="modal-subtitle" id="edit-guest-subtitle">Modifica el nombre, documento o correo del puesto asignado</p>
+      </div>
+
+      <form id="admin-edit-guest-form" novalidate>
+        <input type="hidden" id="edit-guest-code">
+        
+        <div class="form-step">
+          <label class="form-label" for="edit-guest-name">
+            <span>Nombre Completo</span>
+            <span style="color:var(--gold-accent); font-size:11px;">Requerido</span>
+          </label>
+          <input type="text" id="edit-guest-name" class="form-input" placeholder="Ej: Juanito Pérez" required>
+        </div>
+
+        <div class="form-step">
+          <label class="form-label" for="edit-guest-doc">
+            <span>Número de Documento</span>
+            <span style="color:#aaa; font-size:11px;">Opcional</span>
+          </label>
+          <input type="text" id="edit-guest-doc" class="form-input" placeholder="Ej: 1144000123 (o déjalo en blanco)">
+        </div>
+
+        <div class="form-step">
+          <label class="form-label" for="edit-guest-email">
+            <span>Correo Electrónico</span>
+            <span style="color:#aaa; font-size:11px;">Opcional</span>
+          </label>
+          <input type="email" id="edit-guest-email" class="form-input" placeholder="ejemplo@gmail.com (o déjalo en blanco)">
+        </div>
+
+        <div class="add-comp-actions" style="margin-top: 25px;">
+          <button type="submit" class="btn-save-comp" id="btn-submit-edit-guest">
+            💾 Guardar Cambios
+          </button>
+          <button type="button" class="btn-cancel-comp" id="btn-cancel-edit-guest">
+            ✕ Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
        MODAL PARA CREAR NUEVO INVITADO / CABEZA DE FAMILIA (ADMIN PRIVILEGE)
        ========================================================================== -->
   <div class="modal-overlay" id="admin-create-guest-modal">
@@ -371,7 +427,7 @@
             <span>Nombre Completo (Obligatorio)</span>
             <span style="color:var(--gold-accent); font-size:11px;">Requerido</span>
           </label>
-          <input type="text" id="new-guest-name" class="form-input" placeholder="Ej: Marcela López" required>
+          <input type="text" id="new-guest-name" class="form-input" placeholder="Ej: Juanito Pérez" required>
         </div>
 
         <div class="form-step">

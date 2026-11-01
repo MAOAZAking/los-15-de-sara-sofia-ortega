@@ -88,9 +88,19 @@ document.addEventListener("DOMContentLoaded", async () => {
         hoursEl.textContent = "00";
         minsEl.textContent = "00";
         secsEl.textContent = "00";
-        const container = document.querySelector(".countdown-container");
+        const container = document.getElementById("countdown-wrapper") || document.querySelector(".countdown-container");
         if (container) {
-          container.innerHTML = `<div style="color:var(--primary-light); font-size: 22px; font-weight: bold; text-align: center; padding: 15px;">🎉 ¡Llegó el gran día de los 15 de Sara Sofía! 🎉</div>`;
+          container.innerHTML = `
+            <div style="background: rgba(242, 73, 231, 0.12); border: 1.5px solid var(--primary-color); border-radius: 18px; padding: 20px 24px; text-align: center; width: 100%; box-shadow: 0 4px 25px rgba(242, 73, 231, 0.25);">
+              <div style="font-size: 32px; margin-bottom: 8px;">👑 ✨ 💖</div>
+              <h3 style="font-family: var(--font-serif); font-size: 22px; color: var(--gold-accent); margin: 0 0 6px 0;">
+                El evento ya se celebró
+              </h3>
+              <p style="font-size: 14px; color: var(--text-muted); margin: 0; line-height: 1.5;">
+                La celebración de los 15 Años de Sara Sofía se llevó a cabo el <strong>20 de Diciembre de 2026</strong>. ¡Infinitas gracias por habernos acompañado y ser parte de este hermoso recuerdo familiar!
+              </p>
+            </div>
+          `;
         }
         return;
       }
@@ -443,6 +453,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const deadlineNotice = document.getElementById("deadline-expired-notice");
     if (deadlineNotice) deadlineNotice.style.display = "none";
 
+    const mainHeader = document.getElementById("invitation-main-header");
+    const secondaryContent = document.getElementById("invitation-secondary-content");
+    const rsvpContainer = document.getElementById("rsvp-action-container");
+
     let checkedIn = false;
     let groupCompanions = cookieData.companions || [];
 
@@ -471,39 +485,47 @@ document.addEventListener("DOMContentLoaded", async () => {
     vipPassSection.style.display = "block";
     
     if (checkedIn) {
+      // Exclusivo: Ocultar todo el resto de la página y mostrar SOLAMENTE el mensaje de bienvenida
+      if (mainHeader) mainHeader.style.display = "none";
+      if (secondaryContent) secondaryContent.style.display = "none";
+      if (rsvpContainer) rsvpContainer.style.display = "none";
+
+      let companionsHtml = "";
+      if (groupCompanions && groupCompanions.length > 0) {
+        companionsHtml = `
+          <div class="welcome-companions-card">
+            <h4 style="color: var(--gold-light); margin-bottom: 8px; font-size: 13.5px;">👥 Acompañantes en tu grupo:</h4>
+            <ul style="font-size: 13px; color: #ccc; padding-left: 20px; margin: 0; line-height: 1.6;">
+              ${groupCompanions.map(c => `<li><strong>${escapeHtml(c.name)}</strong> (Puesto #${c.slot_number}) ${c.checked_in ? '<span style="color:#2ecc71; font-weight:bold;">✓ Ya Ingresó</span>' : '<span style="color:#aaa;">(Por ingresar)</span>'}</li>`).join('')}
+            </ul>
+          </div>
+        `;
+      }
+
       vipPassSection.innerHTML = `
-        <div class="vip-pass-badge" style="background: linear-gradient(90deg, #198754, #20c997); color: #fff; box-shadow: 0 0 25px rgba(32, 201, 151, 0.6);">
-          ✨ ACCESO AUTORIZADO ✨
-        </div>
-        <h2 class="vip-guest-name" style="font-size: 34px; color: #fff; text-shadow: 0 0 20px rgba(242, 73, 231, 0.7);">${escapeHtml(cookieData.name)}</h2>
-        <div class="vip-slot-info" style="color: #2ecc71; font-weight: bold; font-size: 18px;">Puesto Oficial Asignado: #${cookieData.slot_number} de 90</div>
-        
-        <div class="checked-in-banner" style="margin-top: 25px; border: 2px solid #2ecc71; box-shadow: 0 0 40px rgba(40, 167, 69, 0.6); padding: 25px 20px; border-radius: 20px; background: linear-gradient(135deg, rgba(25, 135, 84, 0.35) 0%, rgba(32, 201, 151, 0.2) 100%); backdrop-filter: blur(8px);">
-          <div style="font-size: 36px; margin-bottom: 8px;">👑 🎉 ✨</div>
-          <h3 style="margin-bottom: 12px; font-size: 26px; font-family: var(--font-serif); color: #fff2b2; text-shadow: 0 0 15px rgba(243, 202, 101, 0.5);">
-            ¡Bienvenid@ a la Gran Fiesta!
-          </h3>
-          <p style="font-size: 15px; font-weight: 500; color: #f7eafc; line-height: 1.5; max-width: 480px; margin: 0 auto;">
-            Tu ingreso ha sido registrado y verificado por la recepción. Pasa adelante y disfruta de una noche mágica e inolvidable junto a Sara Sofía.
+        <div class="checked-in-exclusive-welcome">
+          <div class="welcome-crown">👑</div>
+          <div class="welcome-sparkles">✨ 🎉 ✨</div>
+          <h1 class="welcome-main-title">¡Bienvenid@ a los 15 de Sara Sofía!</h1>
+          <span class="welcome-guest-name">${escapeHtml(cookieData.name)}</span>
+          <div class="welcome-slot-pill">Puesto Oficial Asignado: #${cookieData.slot_number} de 90</div>
+          <p class="welcome-sweet-message">
+            ¡Nos llena de profunda emoción tenerte con nosotros! Pasa adelante y disfruta al máximo de esta noche mágica, única e inolvidable junto a nuestra quinceañera Sara Sofía y toda la familia.
           </p>
-        </div>
-
-        ${groupCompanions && groupCompanions.length > 0 ? `
-        <div style="background: rgba(255,255,255,0.06); padding: 16px; border-radius: 14px; margin-top: 25px; text-align: left; border: 1px solid rgba(242, 73, 231, 0.25);">
-          <h4 style="color: var(--gold-light); margin-bottom: 8px; font-size: 13px;">👥 Tus Acompañantes en Mesa:</h4>
-          <ul style="font-size: 13px; color: #ccc; padding-left: 20px; margin: 0; line-height: 1.6;">
-            ${groupCompanions.map(c => `<li><strong>${escapeHtml(c.name)}</strong> (Puesto #${c.slot_number}) ${c.checked_in ? '<span style="color:#2ecc71; font-weight:bold;">✓ Ya Ingresó</span>' : '<span style="color:#aaa;">(Por ingresar)</span>'}</li>`).join('')}
-          </ul>
-        </div>
-        ` : ''}
-
-        <div class="vip-actions" style="margin-top: 25px;">
-          <a href="${config.EVENT.GOOGLE_CALENDAR_URL}" target="_blank" class="btn-calendar-pass">📅 Agendar en Google Calendar</a>
+          ${companionsHtml}
         </div>
       `;
       triggerGuestConfetti();
 
     } else {
+      // Invitado que aceptó la invitación (Por ingresar):
+      // Parte superior: Encabezado ("Sara Sofía te invita a sus 15")
+      // Debajo del título: Pase QR y datos
+      // Después del QR: Resto de la invitación (tiempo que falta, detalles, código de vestimenta)
+      if (mainHeader) mainHeader.style.display = "block";
+      if (secondaryContent) secondaryContent.style.display = "block";
+      if (rsvpContainer) rsvpContainer.style.display = "none";
+
       vipPassSection.innerHTML = `
         <div class="vip-pass-badge">Pase Oficial de Invitado VIP</div>
         <h2 class="vip-guest-name">${escapeHtml(cookieData.name)}</h2>
@@ -692,36 +714,62 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ==========================================
-  // CELEBRACIÓN Y TRANSFORMACIÓN DINÁMICA DE ENTRADA
+  // CELEBRACIÓN Y TRANSFORMACIÓN DINÁMICA DE ENTRADA (SINCRONIZACIÓN QR DE ALTO IMPACTO)
   // ==========================================
   function triggerGuestLiveCelebration(cookieData) {
-    if (!vipPassSection) return;
-
-    // Actualizar cookie local de asistencia a checked_in
+    // 1. Actualizar cookie local de asistencia a checked_in
     cookieData.checked_in = true;
     dbService.setAttendanceCookie(cookieData);
 
-    // Vibración háptica en smartphones
+    // 2. Vibración háptica en smartphones
     if (navigator.vibrate) {
-      try { navigator.vibrate([150, 80, 150, 80, 300]); } catch (e) {}
+      try { navigator.vibrate([150, 80, 200, 80, 400]); } catch (e) {}
     }
 
-    // Animación suave de transición
-    vipPassSection.style.transition = "all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
-    vipPassSection.style.transform = "scale(0.95)";
-    vipPassSection.style.opacity = "0.7";
+    // 3. Crear overlay dinámico de sincronización en pantalla completa
+    let overlay = document.getElementById("guest-sync-celebration-overlay");
+    if (!overlay) {
+      overlay = document.createElement("div");
+      overlay.id = "guest-sync-celebration-overlay";
+      overlay.className = "guest-sync-celebration-overlay";
+      document.body.appendChild(overlay);
+    }
 
-    setTimeout(() => {
-      renderVipPass(cookieData);
-      vipPassSection.style.transform = "scale(1)";
-      vipPassSection.style.opacity = "1";
+    overlay.innerHTML = `
+      <div class="sync-shockwave-ring"></div>
+      <div class="sync-shockwave-ring"></div>
+      <div class="sync-celebration-card">
+        <div class="sync-card-content">
+          <div class="sync-crown-icon">👑</div>
+          <div class="sync-badge-approved">✓ INGRESO CONFIRMADO EN PUERTA</div>
+          <h2 class="sync-event-welcome">¡Bienvenid@ a la Gran Fiesta!</h2>
+          <span class="sync-guest-name-highlight">${escapeHtml(cookieData.name)}</span>
+          <div class="sync-slot-info">Puesto Asignado: #${cookieData.slot_number} de 90</div>
+          <div style="font-size: 14.5px; color: #fce4fc; margin-bottom: 20px; line-height: 1.5;">
+            Tu código QR ha sido verificado con éxito en la recepción oficial.
+          </div>
+          <div class="sync-progress-bar-wrapper">
+            <div class="sync-progress-bar-fill"></div>
+          </div>
+        </div>
+      </div>
+    `;
 
-      // Doble ráfaga de confeti estelar
-      if (window.triggerGuestConfetti) {
-        window.triggerGuestConfetti();
-        setTimeout(() => window.triggerGuestConfetti(), 1400);
-      }
-    }, 450);
+    // Activar overlay con animación pop-in
+    overlay.classList.add("active");
+
+    // Ráfagas continuas de confeti estelar
+    if (window.triggerGuestConfetti) {
+      window.triggerGuestConfetti();
+      setTimeout(() => window.triggerGuestConfetti(), 800);
+      setTimeout(() => window.triggerGuestConfetti(), 1800);
+    }
+
+    // Tras 3.3 segundos, transición suave hacia la vista exclusiva de bienvenida permanente
+    setTimeout(async () => {
+      overlay.classList.remove("active");
+      await renderVipPass(cookieData);
+    }, 3400);
   }
 
   // ==========================================

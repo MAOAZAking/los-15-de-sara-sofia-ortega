@@ -775,6 +775,188 @@ class DatabaseService {
   }
 
   // ==========================================
+  // CAMBIAR ESTADO DE CHECK-IN (INGRESADO <-> NO INGRESADO)
+  // Permite al Administrador alternar libremente el estado de ingreso de cualquier invitado
+  // ==========================================
+  async setGuestCheckInStatus(code, isCheckedIn) {
+    const cleanCode = (code || "").trim().toUpperCase();
+    const db = await this.fetchDatabase(true);
+
+    let targetSlot = null;
+    for (const s of db.slots) {
+      if (s && s.guest && s.guest.code && s.guest.code.toUpperCase() === cleanCode) {
+        targetSlot = s;
+        break;
+      }
+    }
+
+    if (!targetSlot || !targetSlot.guest) {
+      throw new Error("El código no corresponde a ningún cupo activo en los 90 puestos oficiales.");
+    }
+
+    const nowIso = new Date().toISOString();
+    targetSlot.guest.checked_in = !!isCheckedIn;
+    targetSlot.guest.checked_in_at = isCheckedIn ? nowIso : null;
+
+    if (db.all_time_guests) {
+      const hist = db.all_time_guests.find(g => g.code === cleanCode);
+      if (hist) {
+        hist.checked_in = !!isCheckedIn;
+        hist.checked_in_at = isCheckedIn ? nowIso : null;
+      }
+    }
+
+    const statusText = isCheckedIn ? "Ingresado" : "No ingresado";
+    const commitMessage = `Actualización de estado: ${targetSlot.guest.name} marcado como ${statusText} (Puesto #${targetSlot.slot})`;
+
+    if (this.config.BACKEND_API_URL && this.config.BACKEND_API_URL.startsWith("http")) {
+      try {
+        const res = await fetch(this.config.BACKEND_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify({
+            action: "admin_toggle_checkin",
+            commit_message: commitMessage,
+            code: cleanCode,
+            checked_in: !!isCheckedIn,
+            guest: targetSlot.guest,
+            database: db
+          })
+        });
+        const data = await res.json();
+        if (!data.success) {
+          throw new Error(data.error || "GitHub rechazó la actualización del estado.");
+        }
+      } catch (err) {
+        console.warn("Aviso toggle check-in backend:", err);
+      }
+    }
+
+    this.saveLocalCache(db);
+
+    if (isCheckedIn) {
+      this.notifyRealtimeCheckIn(cleanCode, targetSlot.guest, targetSlot.slot);
+    } else {
+      try {
+        if (window.BroadcastChannel) {
+          const bc = new BroadcastChannel("sara15_realtime_channel");
+          bc.postMessage({ type: "CHECKED_OUT", code: cleanCode });
+          setTimeout(() => bc.close(), 1000);
+        }
+      } catch (e) {}
+    }
+
+    return {
+      success: true,
+      guest: targetSlot.guest,
+      slot: targetSlot.slot,
+      checked_in: targetSlot.guest.checked_in
+    };
+  }
+
+  // ==========================================
+  // EDITAR DATOS DEL INVITADO (NOMBRE, DOCUMENTO, CORREO)
+  // Privilegio de Administrador
+  // ==========================================
+  async adminUpdateGuest(code, { name, document, email }) {
+    const cleanCode = (code || "").trim().toUpperCase();
+    const db = await this.fetchDatabase(true);
+
+    let targetSlot = null;
+    for (const s of db.slots) {
+      if (s && s.guest && s.guest.code && s.guest.code.toUpperCase() === cleanCode) {
+        targetSlot = s;
+        break;
+      }
+    }
+
+    if (!targetSlot || !targetSlot.guest) {
+      throw new Error("No se encontró el invitado en la base de datos.");
+    }
+
+    const oldName = targetSlot.guest.name;
+    const newName = (name !== undefined && name !== null ? name : oldName).trim();
+    const newDoc = (document !== undefined && document !== null ? document : targetSlot.guest.document).toString().trim();
+    const newEmail = (email !== undefined && email !== null ? email : targetSlot.guest.email).toString().trim();
+
+    if (!newName) {
+      throw new Error("El nombre no puede estar vacío.");
+    }
+
+    targetSlot.guest.name = newName;
+    targetSlot.guest.document = newDoc;
+    targetSlot.guest.email = newEmail;
+
+    // Si es líder de grupo, actualizar nombre del líder en sus acompañantes
+    if (targetSlot.guest.is_leader && targetSlot.guest.group_id) {
+      db.slots.forEach(s => {
+        if (s && s.guest && s.guest.group_id === targetSlot.guest.group_id && !s.guest.is_leader) {
+          s.guest.leader_name = newName;
+          s.guest.leader_document = newDoc;
+        }
+      });
+    }
+
+    // Actualizar también en el histórico
+    if (db.all_time_guests) {
+      const hist = db.all_time_guests.find(g => g.code === cleanCode);
+      if (hist) {
+        hist.name = newName;
+        hist.document = newDoc;
+        hist.email = newEmail;
+      }
+      if (targetSlot.guest.is_leader && targetSlot.guest.group_id) {
+        db.all_time_guests.forEach(g => {
+          if (g && g.group_id === targetSlot.guest.group_id && !g.is_leader) {
+            g.leader_name = newName;
+            g.leader_document = newDoc;
+          }
+        });
+      }
+    }
+
+    const commitMessage = `Admin actualizó datos de invitado: ${newName} (Puesto #${targetSlot.slot})`;
+
+    if (this.config.BACKEND_API_URL && this.config.BACKEND_API_URL.startsWith("http")) {
+      try {
+        const res = await fetch(this.config.BACKEND_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify({
+            action: "admin_update_guest",
+            commit_message: commitMessage,
+            code: cleanCode,
+            guest: targetSlot.guest,
+            database: db
+          })
+        });
+        const data = await res.json();
+        if (!data.success) {
+          throw new Error(data.error || "GitHub rechazó la actualización del invitado.");
+        }
+      } catch (err) {
+        console.warn("Aviso update guest backend:", err);
+      }
+    }
+
+    this.saveLocalCache(db);
+
+    try {
+      if (window.BroadcastChannel) {
+        const bc = new BroadcastChannel("sara15_realtime_channel");
+        bc.postMessage({ type: "GUEST_UPDATED", code: cleanCode, name: newName });
+        setTimeout(() => bc.close(), 1000);
+      }
+    } catch (e) {}
+
+    return {
+      success: true,
+      guest: targetSlot.guest,
+      slot: targetSlot.slot
+    };
+  }
+
+  // ==========================================
   // DISPATCHER DE SINCRONIZACIÓN EN TIEMPO REAL
   // Al escanear el QR, notifica inmediatamente (<300ms) al teléfono del invitado
   // ==========================================
@@ -1016,6 +1198,22 @@ class DatabaseService {
     const nowIso = new Date().toISOString();
     const registeredCompanions = [];
 
+    // Garantizar que el invitado seleccionado quede formalmente establecido como Líder
+    const leaderSlotIndex = updatedDb.slots.findIndex(s => s && s.guest && s.guest.code === leaderGuest.code);
+    if (leaderSlotIndex !== -1) {
+      if (!updatedDb.slots[leaderSlotIndex].guest.group_id) {
+        updatedDb.slots[leaderSlotIndex].guest.group_id = "group_" + leaderGuest.code;
+      }
+      updatedDb.slots[leaderSlotIndex].guest.is_leader = true;
+      updatedDb.slots[leaderSlotIndex].guest.leader_name = updatedDb.slots[leaderSlotIndex].guest.name;
+      updatedDb.slots[leaderSlotIndex].guest.leader_document = updatedDb.slots[leaderSlotIndex].guest.document;
+
+      leaderGuest.group_id = updatedDb.slots[leaderSlotIndex].guest.group_id;
+      leaderGuest.is_leader = true;
+      leaderGuest.leader_name = updatedDb.slots[leaderSlotIndex].guest.name;
+      leaderGuest.leader_document = updatedDb.slots[leaderSlotIndex].guest.document;
+    }
+
     // Contar cuántos acompañantes ya tenía en este grupo
     let existingCompanionsCount = 0;
     updatedDb.slots.forEach(s => {
@@ -1059,6 +1257,10 @@ class DatabaseService {
     if (updatedDb.all_time_guests) {
       const histLeader = updatedDb.all_time_guests.find(g => g.code === leaderGuest.code);
       if (histLeader) {
+        histLeader.is_leader = true;
+        histLeader.group_id = leaderGuest.group_id;
+        histLeader.leader_name = leaderGuest.name;
+        histLeader.leader_document = leaderGuest.document;
         if (!histLeader.companions_registered) histLeader.companions_registered = [];
         registeredCompanions.forEach(c => {
           histLeader.companions_registered.push({

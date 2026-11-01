@@ -192,3 +192,124 @@ body {
   color: #FFFFFF !important; /* Letras blancas para contraste óptimo */
   box-shadow: 0 6px 20px var(--primary-glow) !important;
 }
+
+
+/* ==========================================================================
+   TEMA CLARO PARA EL FORMULARIO DE REGISTRO / ASISTENCIA (MODAL RSVP)
+   ========================================================================== */
+.modal-overlay {
+  background: rgba(250, 240, 252, 0.85) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+}
+
+.modal-content,
+#rsvp-modal .modal-content {
+  background: linear-gradient(150deg, #FFFFFF 0%, #FDF4FC 100%) !important;
+  border: 1.5px solid rgba(242, 73, 231, 0.4) !important;
+  box-shadow: 0 20px 60px rgba(181, 21, 171, 0.16), 0 0 30px rgba(242, 73, 231, 0.15) !important;
+  color: var(--text-main) !important;
+}
+
+.modal-close {
+  background: rgba(242, 73, 231, 0.1) !important;
+  border: 1px solid rgba(242, 73, 231, 0.25) !important;
+  color: var(--text-dark) !important;
+}
+
+.modal-close:hover {
+  background: var(--primary-color) !important;
+  color: #FFFFFF !important;
+  border-color: var(--primary-dark) !important;
+  box-shadow: 0 0 15px rgba(242, 73, 231, 0.4) !important;
+}
+
+.modal-title {
+  color: var(--primary-dark) !important;
+  text-shadow: none !important;
+}
+
+.modal-subtitle {
+  color: var(--text-muted) !important;
+}
+
+.form-vacancies-indicator {
+  background: rgba(242, 73, 231, 0.08) !important;
+  border: 1.5px dashed var(--primary-color) !important;
+  color: var(--gold-light) !important;
+}
+
+.form-label {
+  color: var(--text-dark) !important;
+}
+
+.lock-badge {
+  background: rgba(242, 73, 231, 0.12) !important;
+  color: var(--primary-dark) !important;
+  border: 1px solid rgba(242, 73, 231, 0.2) !important;
+}
+
+.form-input {
+  background: #FFFFFF !important;
+  border: 1.5px solid rgba(242, 73, 231, 0.35) !important;
+  color: var(--text-dark) !important;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.03) !important;
+}
+
+.form-input::placeholder {
+  color: #9d889b !important;
+}
+
+.form-input:focus {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 12px rgba(242, 73, 231, 0.25), inset 0 2px 4px rgba(0, 0, 0, 0.02) !important;
+  background: #FFFFFF !important;
+}
+
+.form-input:disabled {
+  background: #F6EFF7 !important;
+  border-color: rgba(200, 180, 205, 0.4) !important;
+  color: #999999 !important;
+  cursor: not-allowed !important;
+}
+
+.calendar-consent-note {
+  color: var(--text-muted) !important;
+}
+
+.btn-submit-registration {
+  background: linear-gradient(135deg, #F249E7 0%, #B31BAA 100%) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 8px 25px rgba(242, 73, 231, 0.35) !important;
+}
+
+.btn-submit-registration:hover:not(:disabled) {
+  box-shadow: 0 10px 30px rgba(242, 73, 231, 0.55) !important;
+}
+
+.btn-submit-registration:disabled {
+  background: #D9C8DB !important;
+  color: #7A657C !important;
+  box-shadow: none !important;
+}
+
+/* Vista exclusiva de bienvenida en Tema Claro */
+.welcome-main-title {
+  color: var(--primary-dark) !important;
+  text-shadow: 0 0 15px rgba(242, 73, 231, 0.2) !important;
+}
+
+.welcome-guest-name {
+  color: var(--text-dark) !important;
+  text-shadow: 0 0 15px rgba(242, 73, 231, 0.3) !important;
+}
+
+.welcome-sweet-message {
+  color: var(--text-main) !important;
+}
+
+.welcome-companions-card {
+  background: rgba(242, 73, 231, 0.06) !important;
+  border-color: rgba(242, 73, 231, 0.3) !important;
+  color: var(--text-dark) !important;
+}

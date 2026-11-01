@@ -290,16 +290,18 @@ document.addEventListener("DOMContentLoaded", async () => {
       } else if (guest.checked_in) {
         statusBadge = `<span class="status-tag entered">✓ Ingresó</span>`;
         actions = `
-          <div style="display: flex; gap: 6px;">
-            <span style="color:#2ecc71; font-size:11px; align-self:center;">Ingresado</span>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <button class="btn-toggle-uncheckin" data-code="${escapeHtml(guest.code)}" title="Cambiar estado a No Ingresado" style="background: rgba(255, 193, 7, 0.2); border: 1px solid #ffc107; color: #ffeb99; padding: 5px 10px; border-radius: 12px; font-size: 11px; cursor: pointer; font-weight: 600;">↩️ No Ingresó</button>
+            <button class="btn-admin-edit-row" data-code="${escapeHtml(guest.code)}" data-slot="${s.slot}" title="Editar nombre, documento y correo" style="background: rgba(52, 152, 219, 0.2); border: 1px solid #3498db; color: #bde0fe; padding: 5px 10px; border-radius: 12px; font-size: 11px; cursor: pointer; font-weight: 600;">✏️ Editar</button>
             <button class="btn-admin-cancel-slot" data-code="${escapeHtml(guest.code)}" data-slot="${s.slot}" title="Dar de baja y liberar puesto en GitHub" style="background: rgba(220,53,69,0.15); border: 1px solid #dc3545; color: #ff8595; padding: 5px 10px; border-radius: 12px; font-size: 11px; cursor: pointer;">Dar de baja</button>
           </div>
         `;
       } else {
         statusBadge = `<span class="status-tag occupied">Confirmado</span>`;
         actions = `
-          <div style="display: flex; gap: 6px;">
-            <button class="btn-manual-checkin" data-code="${escapeHtml(guest.code)}">Ingresar</button>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <button class="btn-manual-checkin" data-code="${escapeHtml(guest.code)}">✅ Ingresar</button>
+            <button class="btn-admin-edit-row" data-code="${escapeHtml(guest.code)}" data-slot="${s.slot}" title="Editar nombre, documento y correo" style="background: rgba(52, 152, 219, 0.2); border: 1px solid #3498db; color: #bde0fe; padding: 5px 10px; border-radius: 12px; font-size: 11px; cursor: pointer; font-weight: 600;">✏️ Editar</button>
             <button class="btn-admin-cancel-slot" data-code="${escapeHtml(guest.code)}" data-slot="${s.slot}" title="Dar de baja y liberar puesto en GitHub" style="background: rgba(220,53,69,0.15); border: 1px solid #dc3545; color: #ff8595; padding: 5px 10px; border-radius: 12px; font-size: 11px; cursor: pointer;">Dar de baja</button>
           </div>
         `;
@@ -336,6 +338,41 @@ document.addEventListener("DOMContentLoaded", async () => {
         btn.setAttribute("disabled", "true");
         btn.innerHTML = `...`;
         await executeCheckIn(code);
+      });
+    });
+
+    // Listeners Cambiar a No Ingresado
+    slotsTableBody.querySelectorAll(".btn-toggle-uncheckin").forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const code = btn.getAttribute("data-code");
+        btn.setAttribute("disabled", "true");
+        btn.innerHTML = `<span class="spinner" style="width:10px;height:10px;border-width:2px;"></span>`;
+        window.showTopNotice("Cambiando estado a No Ingresado...", "loading");
+        try {
+          await dbService.setGuestCheckInStatus(code, false);
+          window.showTopNotice("Estado actualizado: No Ingresado", "success", 3000);
+          await loadAdminData();
+        } catch (err) {
+          window.showTopNotice(err.message || "Error al actualizar estado.", "error", 4000);
+          btn.removeAttribute("disabled");
+          btn.innerHTML = `↩️ No Ingresó`;
+        }
+      });
+    });
+
+    // Listeners Editar Invitado desde fila
+    slotsTableBody.querySelectorAll(".btn-admin-edit-row").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const code = btn.getAttribute("data-code");
+        const slot = btn.getAttribute("data-slot");
+        if (currentDb && currentDb.slots) {
+          const s = currentDb.slots.find(item => item && item.guest && item.guest.code === code);
+          if (s && s.guest) {
+            openEditGuestModal(s.guest, slot);
+          }
+        }
       });
     });
 
@@ -384,6 +421,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const detailCompanionsList = document.getElementById("detail-companions-list");
 
   const btnOpenAddCompMode = document.getElementById("btn-open-add-comp-mode");
+  const btnOpenEditMode = document.getElementById("btn-open-edit-mode");
   const btnDetailCheckin = document.getElementById("btn-detail-checkin");
   const btnDetailDelete = document.getElementById("btn-detail-delete");
 
@@ -393,6 +431,99 @@ document.addEventListener("DOMContentLoaded", async () => {
   const btnAddAnotherCompInput = document.getElementById("btn-add-another-comp-input");
   const btnConfirmSaveComps = document.getElementById("btn-confirm-save-comps");
   const btnCancelAddComp = document.getElementById("btn-cancel-add-comp");
+
+  // Modal Editar Invitado Elements
+  const editGuestModal = document.getElementById("admin-edit-guest-modal");
+  const btnCloseEditGuest = document.getElementById("btn-close-edit-guest");
+  const btnCancelEditGuest = document.getElementById("btn-cancel-edit-guest");
+  const editGuestForm = document.getElementById("admin-edit-guest-form");
+  const editGuestSubtitle = document.getElementById("edit-guest-subtitle");
+  const editGuestCode = document.getElementById("edit-guest-code");
+  const editGuestName = document.getElementById("edit-guest-name");
+  const editGuestDoc = document.getElementById("edit-guest-doc");
+  const editGuestEmail = document.getElementById("edit-guest-email");
+
+  function openEditGuestModal(guest, slot) {
+    if (!editGuestModal) return;
+    if (editGuestCode) editGuestCode.value = guest.code;
+    if (editGuestName) editGuestName.value = guest.name || "";
+    if (editGuestDoc) editGuestDoc.value = guest.document || "";
+    if (editGuestEmail) editGuestEmail.value = guest.email || "";
+    if (editGuestSubtitle) {
+      editGuestSubtitle.textContent = `Puesto #${slot} de 90 • Código: ${guest.code}`;
+    }
+    editGuestModal.classList.add("active");
+    if (editGuestName) editGuestName.focus();
+  }
+
+  if (btnOpenEditMode) {
+    btnOpenEditMode.addEventListener("click", () => {
+      if (currentlySelectedGuest) {
+        openEditGuestModal(currentlySelectedGuest, currentlySelectedSlot);
+      }
+    });
+  }
+
+  if (btnCloseEditGuest) {
+    btnCloseEditGuest.addEventListener("click", () => {
+      if (editGuestModal) editGuestModal.classList.remove("active");
+    });
+  }
+
+  if (btnCancelEditGuest) {
+    btnCancelEditGuest.addEventListener("click", () => {
+      if (editGuestModal) editGuestModal.classList.remove("active");
+    });
+  }
+
+  if (editGuestForm) {
+    editGuestForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const code = (editGuestCode ? editGuestCode.value : "").trim();
+      const name = (editGuestName ? editGuestName.value : "").trim();
+      const doc = (editGuestDoc ? editGuestDoc.value : "").trim();
+      const email = (editGuestEmail ? editGuestEmail.value : "").trim();
+
+      if (!name) {
+        window.showTopNotice("El nombre completo es obligatorio.", "warning", 3000);
+        if (editGuestName) editGuestName.focus();
+        return;
+      }
+
+      const submitBtn = editGuestForm.querySelector("#btn-submit-edit-guest");
+      const originalText = submitBtn ? submitBtn.innerHTML : "Guardar Cambios";
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<span class="spinner" style="width:14px;height:14px;border-width:2px;margin-right:8px;vertical-align:middle;"></span> Guardando...`;
+      }
+
+      window.showTopNotice(`Actualizando datos de ${name}...`, "loading");
+
+      try {
+        await dbService.adminUpdateGuest(code, { name, document: doc, email });
+        window.showTopNotice("¡Datos del invitado actualizados exitosamente!", "success", 4000);
+        if (editGuestModal) editGuestModal.classList.remove("active");
+
+        await loadAdminData();
+
+        // Si el modal de detalle estaba abierto, refrescarlo
+        if (currentDb && currentDb.slots) {
+          const updatedSlot = currentDb.slots.find(s => s && s.guest && s.guest.code === code);
+          if (updatedSlot && updatedSlot.guest && currentlySelectedGuest && currentlySelectedGuest.code === code) {
+            openGuestDetailModal(updatedSlot.guest, updatedSlot.slot);
+          }
+        }
+      } catch (err) {
+        console.error("Error al editar invitado:", err);
+        window.showTopNotice(err.message || "Error al actualizar datos del invitado.", "error", 5000);
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalText;
+        }
+      }
+    });
+  }
 
   function openGuestDetailModal(guest, slot) {
     if (!guestDetailModal) return;
@@ -431,10 +562,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (btnDetailCheckin) {
       if (guest.checked_in) {
-        btnDetailCheckin.textContent = "✓ Ya Ingresó";
-        btnDetailCheckin.disabled = true;
+        btnDetailCheckin.innerHTML = "↩️ Cambiar a No Ingresado";
+        btnDetailCheckin.className = "btn-action-uncheckin";
+        btnDetailCheckin.disabled = false;
       } else {
-        btnDetailCheckin.textContent = "✅ Dar Ingreso";
+        btnDetailCheckin.innerHTML = "✅ Dar Ingreso";
+        btnDetailCheckin.className = "btn-action-checkin";
         btnDetailCheckin.disabled = false;
       }
     }
@@ -474,28 +607,49 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  if (guestDetailModal) {
-    guestDetailModal.addEventListener("click", (e) => {
-      if (e.target === guestDetailModal) {
-        guestDetailModal.classList.remove("active");
-      }
-    });
-  }
+  // Cerrar cualquier modal al hacer clic en el contorno libre / filtro oscuro
+  [guestDetailModal, createGuestModal, editGuestModal].forEach(modal => {
+    if (modal) {
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+          modal.classList.remove("active");
+        }
+      });
+    }
+  });
 
-  // Dar Ingreso desde el modal de detalle
+  // Alternar Ingreso / No Ingresado desde el modal de detalle
   if (btnDetailCheckin) {
     btnDetailCheckin.addEventListener("click", async () => {
       if (!currentlySelectedGuest) return;
       btnDetailCheckin.disabled = true;
-      btnDetailCheckin.textContent = "Procesando...";
-      await executeCheckIn(currentlySelectedGuest.code);
-      
-      // Actualizar vista del modal
-      if (currentDb) {
-        const updatedSlot = currentDb.slots.find(s => s && s.guest && s.guest.code === currentlySelectedGuest.code);
-        if (updatedSlot && updatedSlot.guest) {
-          openGuestDetailModal(updatedSlot.guest, updatedSlot.slot);
+      const isCurrentlyEntered = !!currentlySelectedGuest.checked_in;
+      const willEnter = !isCurrentlyEntered;
+
+      btnDetailCheckin.innerHTML = willEnter ? `Procesando ingreso...` : `Actualizando...`;
+      window.showTopNotice(`Cambiando estado a ${willEnter ? 'Ingresado' : 'No ingresado'}...`, "loading");
+
+      try {
+        if (willEnter) {
+          await executeCheckIn(currentlySelectedGuest.code);
+        } else {
+          await dbService.setGuestCheckInStatus(currentlySelectedGuest.code, false);
+          window.showTopNotice(`Invitado marcado como No Ingresado.`, "success", 3000);
+          await loadAdminData();
         }
+
+        // Actualizar vista del modal
+        if (currentDb) {
+          const updatedSlot = currentDb.slots.find(s => s && s.guest && s.guest.code === currentlySelectedGuest.code);
+          if (updatedSlot && updatedSlot.guest) {
+            openGuestDetailModal(updatedSlot.guest, updatedSlot.slot);
+          }
+        }
+      } catch (err) {
+        console.error("Error al alternar estado:", err);
+        window.showTopNotice(err.message || "Error al cambiar estado.", "error", 4500);
+      } finally {
+        btnDetailCheckin.disabled = false;
       }
     });
   }

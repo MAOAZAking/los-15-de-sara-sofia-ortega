@@ -170,10 +170,18 @@ function doPost(e) {
         }
       }
 
+      // 3. Notificación puntual y estilizada a ortegalex777@gmail.com
+      try {
+        sendAdminNewGuestAlertEmail(leader, companions);
+      } catch (adminMailErr) {
+        Logger.log("Aviso: Commit guardado pero error enviando alerta a ortegalex777@gmail.com: " + adminMailErr.toString());
+      }
+
       return createJsonResponse({
         success: true,
         commit: commitResult,
-        email_sent_to: leader.email || null
+        email_sent_to: leader.email || null,
+        alert_sent_to: "ortegalex777@gmail.com"
       });
     }
 
@@ -226,19 +234,19 @@ function doPost(e) {
     // ==========================================
     // 3. PURGA / ELIMINACIÓN DESDE EL ADMIN
     // ==========================================
-    if (action === "admin_purge") {
+    if (action === "admin_purge" || action === "admin_update_guest" || action === "admin_toggle_checkin" || action === "admin_add_companions" || action === "admin_register") {
       if (!payload.database) {
         return createJsonResponse({ success: false, error: "Falta el payload de database." });
       }
 
-      const commitMessage = payload.commit_message || "Purga administrativa de puesto";
+      const commitMessage = payload.commit_message || `Acción de Administrador: ${action}`;
       let commitResult;
       try {
         commitResult = commitDatabaseToGitHub(payload.database, commitMessage);
       } catch (gitErr) {
         return createJsonResponse({
           success: false,
-          error: "Fallo al purgar en GitHub: " + gitErr.message
+          error: "Fallo al guardar en GitHub: " + gitErr.message
         });
       }
 
@@ -494,7 +502,7 @@ function sendConfirmationEmail(leader, companions) {
           <div class="calendar-btn-container">
             <p style="font-size: 13px; color: #555; margin-bottom: 10px;">¡No olvides agendarlo en tu Google Calendar!</p>
             <a target="_blank" href="${CALENDAR_URL}" class="btn-cal">
-              📅 Agendar en Google Calendar
+              &#128197; Agendar en Google Calendar
             </a>
           </div>
         </div>
@@ -508,7 +516,7 @@ function sendConfirmationEmail(leader, companions) {
     </html>
   `;
 
-  GmailApp.sendEmail(toEmail, `&#10024 [IMPORTANTE] ¡Asistencia Confirmada! Los 15 de Sara Sofía Ortega Ayala &#10024`, "", {
+  GmailApp.sendEmail(toEmail, "✨ [IMPORTANTE] ¡Asistencia Confirmada! Los 15 de Sara Sofía Ortega Ayala ✨", "", {
     htmlBody: htmlBody,
     name: "Los 15 de Sara Sofía",
     importance: "high"
@@ -550,7 +558,7 @@ function sendCancelLinkEmail(email, name, cancelUrl) {
     </html>
   `;
 
-  GmailApp.sendEmail(email, `&#9888 [Acción Requerida] Gestiona tu asistencia - Los 15 de Sara Sofía &#9888`, "", {
+  GmailApp.sendEmail(email, "⚠️ [Acción Requerida] Gestiona tu asistencia - Los 15 de Sara Sofía ⚠️", "", {
     htmlBody: htmlBody,
     name: "Los 15 de Sara Sofía",
     importance: "high"
@@ -590,9 +598,80 @@ function sendCancellationConfirmedEmail(requester, releasedCount) {
     </html>
   `;
 
-  GmailApp.sendEmail(requester.email, `&#128363 [NOTIFICACIÓN] Asistencia Cancelada - Te extrañaremos en los 15 de Sara Sofía &#128363`, "", {
+  GmailApp.sendEmail(requester.email, "📢 [NOTIFICACIÓN] Asistencia Cancelada - Te extrañaremos en los 15 de Sara Sofía 📢", "", {
     htmlBody: htmlBody,
     name: "Los 15 de Sara Sofía",
+    importance: "high"
+  });
+}
+
+/**
+ * Notificación puntual y estilizada a ortegalex777@gmail.com
+ * cuando una persona acepta la invitación y se añade a la lista
+ */
+function sendAdminNewGuestAlertEmail(leader, companions) {
+  const adminTargetEmail = "ortegalex777@gmail.com";
+  const guestName = leader.name || "Invitado";
+  const compCount = companions ? companions.length : 0;
+  
+  let companionText = "";
+  if (compCount > 0) {
+    const names = companions.map(function(c) { return c.name; }).join(", ");
+    companionText = `<p style="margin: 6px 0 0 0; font-size: 13px; color: #666;">Acompañantes (+${compCount}): <strong>${names}</strong></p>`;
+  }
+
+  const htmlBody = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f7ebf8; margin: 0; padding: 25px 15px; color: #222; }
+        .card { max-width: 520px; margin: 0 auto; background: #ffffff; border-radius: 18px; overflow: hidden; box-shadow: 0 12px 35px rgba(242, 73, 231, 0.18); border: 1.5px solid rgba(242, 73, 231, 0.3); }
+        .header { background: linear-gradient(135deg, #1c0628 0%, #3a0d4c 100%); padding: 30px 20px; text-align: center; color: #ffffff; border-bottom: 2px solid #f249e7; }
+        .crown { font-size: 32px; margin-bottom: 6px; }
+        .header-title { font-size: 20px; font-weight: bold; margin: 0; color: #f3ca65; letter-spacing: 1px; font-family: 'Georgia', serif; }
+        .content { padding: 35px 28px; text-align: center; }
+        .alert-pill { display: inline-block; background: rgba(40, 167, 69, 0.12); border: 1px solid #28a745; color: #218838; font-weight: bold; font-size: 12px; padding: 5px 14px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 18px; }
+        .message-main { font-size: 17px; line-height: 1.6; color: #2d0a3d; margin: 0 0 20px 0; }
+        .guest-highlight { color: #b515ab; font-size: 20px; font-weight: 800; display: block; margin-top: 4px; }
+        .info-box { background: #faf3fb; border-left: 4px solid #f249e7; border-radius: 8px; padding: 14px 18px; text-align: left; margin: 20px 0; font-size: 14px; }
+        .footer { background: #fdf7fe; padding: 16px 20px; text-align: center; font-size: 11.5px; color: #888; border-top: 1px solid #f0def2; }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <div class="header">
+          <div class="crown">&#128081;</div>
+          <div class="header-title">Los 15 de Sara Sofía Ortega Ayala</div>
+        </div>
+
+        <div class="content">
+          <div class="alert-pill">&#10003; Nueva Asistencia Confirmada</div>
+          
+          <p class="message-main">
+            Una persona más ha aceptado la invitación y fue añadida a la lista oficial de asistentes:
+            <span class="guest-highlight">${guestName}</span>
+          </p>
+
+          <div class="info-box">
+            <p style="margin: 0; color: #333;"><strong>Invitado:</strong> ${guestName}</p>
+            <p style="margin: 6px 0 0 0; color: #333;"><strong>Puesto Asignado:</strong> #${leader.slot_number || 1} de 90</p>
+            ${companionText}
+          </div>
+        </div>
+
+        <div class="footer">
+          Notificación automática de confirmación • Panel de Control Los 15 de Sara Sofía
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  GmailApp.sendEmail(adminTargetEmail, `✨ ¡Nueva Confirmación! ${guestName} aceptó la invitación ✨`, "", {
+    htmlBody: htmlBody,
+    name: "Los 15 de Sara Sofía - Notificaciones",
     importance: "high"
   });
 }
