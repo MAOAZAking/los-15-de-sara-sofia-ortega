@@ -148,15 +148,54 @@
     },
     {
       "slot": 9,
-      "guest": null
+      "guest": {
+        "code": "SARA15-JGTQWA",
+        "name": "Diego Enrique Ayala",
+        "document": "14993663",
+        "email": "diegoeayala67@gmail.com",
+        "is_leader": true,
+        "group_id": "GRP-ADM-MVX53WIG-80B",
+        "leader_name": "Diego Enrique Ayala",
+        "leader_document": "14993663",
+        "registered_at": "2026-11-01T01:17:06.520Z",
+        "slot_number": 9,
+        "checked_in": false,
+        "checked_in_at": null
+      }
     },
     {
       "slot": 10,
-      "guest": null
+      "guest": {
+        "code": "SARA15-NNVG5P",
+        "name": "Celeste Castgaño Ayala",
+        "document": "14993663-A1",
+        "email": "diegoeayala67@gmail.com",
+        "is_leader": false,
+        "group_id": "GRP-ADM-MVX53WIG-80B",
+        "leader_name": "Diego Enrique Ayala",
+        "leader_document": "14993663",
+        "registered_at": "2026-11-01T01:17:06.520Z",
+        "slot_number": 10,
+        "checked_in": false,
+        "checked_in_at": null
+      }
     },
     {
       "slot": 11,
-      "guest": null
+      "guest": {
+        "code": "SARA15-AXKUZ7",
+        "name": "Rosa Elvira Arce",
+        "document": "14993663-A2",
+        "email": "diegoeayala67@gmail.com",
+        "is_leader": false,
+        "group_id": "GRP-ADM-MVX53WIG-80B",
+        "leader_name": "Diego Enrique Ayala",
+        "leader_document": "14993663",
+        "registered_at": "2026-11-01T01:17:06.520Z",
+        "slot_number": 11,
+        "checked_in": false,
+        "checked_in_at": null
+      }
     },
     {
       "slot": 12,
@@ -604,6 +643,67 @@
       "checked_in_at": null,
       "status": "active",
       "companions_registered": []
+    },
+    {
+      "code": "SARA15-JGTQWA",
+      "name": "Diego Enrique Ayala",
+      "document": "14993663",
+      "email": "diegoeayala67@gmail.com",
+      "is_leader": true,
+      "group_id": "GRP-ADM-MVX53WIG-80B",
+      "leader_name": "Diego Enrique Ayala",
+      "leader_document": "14993663",
+      "registered_at": "2026-11-01T01:17:06.520Z",
+      "slot_number": 9,
+      "checked_in": false,
+      "checked_in_at": null,
+      "status": "active",
+      "companions_registered": [
+        {
+          "name": "Celeste Castgaño Ayala",
+          "document": "14993663-A1",
+          "email": "diegoeayala67@gmail.com",
+          "code": "SARA15-NNVG5P",
+          "slot_number": 10
+        },
+        {
+          "name": "Rosa Elvira Arce",
+          "document": "14993663-A2",
+          "email": "diegoeayala67@gmail.com",
+          "code": "SARA15-AXKUZ7",
+          "slot_number": 11
+        }
+      ]
+    },
+    {
+      "code": "SARA15-NNVG5P",
+      "name": "Celeste Castgaño Ayala",
+      "document": "14993663-A1",
+      "email": "diegoeayala67@gmail.com",
+      "is_leader": false,
+      "group_id": "GRP-ADM-MVX53WIG-80B",
+      "leader_name": "Diego Enrique Ayala",
+      "leader_document": "14993663",
+      "registered_at": "2026-11-01T01:17:06.520Z",
+      "slot_number": 10,
+      "checked_in": false,
+      "checked_in_at": null,
+      "status": "active"
+    },
+    {
+      "code": "SARA15-AXKUZ7",
+      "name": "Rosa Elvira Arce",
+      "document": "14993663-A2",
+      "email": "diegoeayala67@gmail.com",
+      "is_leader": false,
+      "group_id": "GRP-ADM-MVX53WIG-80B",
+      "leader_name": "Diego Enrique Ayala",
+      "leader_document": "14993663",
+      "registered_at": "2026-11-01T01:17:06.520Z",
+      "slot_number": 11,
+      "checked_in": false,
+      "checked_in_at": null,
+      "status": "active"
     }
   ]
 }
