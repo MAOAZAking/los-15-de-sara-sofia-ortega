@@ -165,7 +165,20 @@
     },
     {
       "slot": 10,
-      "guest": null
+      "guest": {
+        "code": "SARA15-XBBTF2",
+        "name": "Isaac Arango",
+        "document": "1104805498",
+        "email": "iamconcentrate777@gmail.com",
+        "is_leader": true,
+        "group_id": "GRP-MVXUU9BE-FSQ",
+        "leader_name": "Isaac Arango",
+        "leader_document": "1104805498",
+        "registered_at": "2026-11-01T13:17:26.570Z",
+        "slot_number": 10,
+        "checked_in": false,
+        "checked_in_at": null
+      }
     },
     {
       "slot": 11,
@@ -676,6 +689,22 @@
       "checked_in": false,
       "checked_in_at": null,
       "status": "active"
+    },
+    {
+      "code": "SARA15-XBBTF2",
+      "name": "Isaac Arango",
+      "document": "1104805498",
+      "email": "iamconcentrate777@gmail.com",
+      "is_leader": true,
+      "group_id": "GRP-MVXUU9BE-FSQ",
+      "leader_name": "Isaac Arango",
+      "leader_document": "1104805498",
+      "registered_at": "2026-11-01T13:17:26.570Z",
+      "slot_number": 10,
+      "checked_in": false,
+      "checked_in_at": null,
+      "status": "active",
+      "companions_registered": []
     }
   ]
 }
