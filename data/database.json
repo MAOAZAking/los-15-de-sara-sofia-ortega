@@ -199,7 +199,20 @@
     },
     {
       "slot": 12,
-      "guest": null
+      "guest": {
+        "code": "SARA15-DDYXKC",
+        "name": "Yaneth Ortega",
+        "document": "31566268",
+        "email": "yanethzambrano252@gmail.com",
+        "is_leader": true,
+        "group_id": "GRP-MVXUWTJK-INI",
+        "leader_name": "Yaneth Ortega",
+        "leader_document": "31566268",
+        "registered_at": "2026-11-01T13:19:26.096Z",
+        "slot_number": 12,
+        "checked_in": false,
+        "checked_in_at": null
+      }
     },
     {
       "slot": 13,
@@ -701,6 +714,22 @@
       "leader_document": "1104805498",
       "registered_at": "2026-11-01T13:17:26.570Z",
       "slot_number": 10,
+      "checked_in": false,
+      "checked_in_at": null,
+      "status": "active",
+      "companions_registered": []
+    },
+    {
+      "code": "SARA15-DDYXKC",
+      "name": "Yaneth Ortega",
+      "document": "31566268",
+      "email": "yanethzambrano252@gmail.com",
+      "is_leader": true,
+      "group_id": "GRP-MVXUWTJK-INI",
+      "leader_name": "Yaneth Ortega",
+      "leader_document": "31566268",
+      "registered_at": "2026-11-01T13:19:26.096Z",
+      "slot_number": 12,
       "checked_in": false,
       "checked_in_at": null,
       "status": "active",
