@@ -53,7 +53,7 @@ const CONFIG = {
   // Backend URL (Google Apps Script Web App desplegada con tu correo)
   // Al desplegar tu Google Apps Script, pega la URL generada aquí.
   // Mientras esté vacía o en desarrollo local, el sistema usa el modo híbrido con persistencia local y sincronización.
-  BACKEND_API_URL: "https://script.google.com/macros/s/AKfycbyaGqM2H6VaNkjALfxo8NVOY5RSoVy3Gmoka7I6zV3-VWNNzCxNgggd7pNj6BaIV6m1/exec", 
+  BACKEND_API_URL: "https://script.google.com/macros/s/AKfycbxLsE5PqylCxIVLW8yksfAYn7SluMjymnCFO3_cRb49PrVW9EFx1B9C9wUHHdsQ_jU/exec", 
 
   // Frase estricta para confirmación de cancelación
   CANCEL_SECURITY_PHRASE: "CANCELAR asistencia"

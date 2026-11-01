@@ -222,26 +222,33 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function renderStats() {
-    if (!currentDb || !currentDb.slots) return;
+      if (!currentDb || !currentDb.slots) return;
 
-    let occupied = 0;
-    let entered = 0;
+      let occupied = 0;
+      let entered = 0;
 
-    currentDb.slots.forEach(s => {
-      if (s && s.guest) {
-        occupied++;
-        if (s.guest.checked_in) entered++;
+      currentDb.slots.forEach(s => {
+        if (s && s.guest) {
+          occupied++;
+          if (s.guest.checked_in) entered++;
+        }
+      });
+
+      const free = Math.max(0, 90 - occupied);
+      const historyCount = (currentDb.all_time_guests || []).length;
+
+      if (statOccupied) statOccupied.textContent = `${occupied} / 90`;
+      if (statFree) statFree.textContent = `${free}`;
+      if (statEntered) statEntered.textContent = `${entered}`;
+      if (statHistorical) statHistorical.textContent = `${historyCount}`;
+
+      // Nueva línea: Selecciona el span del botón y le asigna los puestos libres (restantes)
+      const totalSlotsElement = document.getElementById('total-slots');
+      if (totalSlotsElement) {
+          totalSlotsElement.textContent = free;
       }
-    });
-
-    const free = Math.max(0, 90 - occupied);
-    const historyCount = (currentDb.all_time_guests || []).length;
-
-    if (statOccupied) statOccupied.textContent = `${occupied} / 90`;
-    if (statFree) statFree.textContent = `${free}`;
-    if (statEntered) statEntered.textContent = `${entered}`;
-    if (statHistorical) statHistorical.textContent = `${historyCount}`;
   }
+
 
   // ==========================================
   // TABLA DE PUESTOS (90 CUPOS) Y BÚSQUEDA
