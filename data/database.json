@@ -233,7 +233,20 @@
     },
     {
       "slot": 14,
-      "guest": null
+      "guest": {
+        "code": "SARA15-PM5WRE",
+        "name": "Lina María Pascumal Ijaji",
+        "document": "1151952293",
+        "email": "linapas07@gmail.com",
+        "is_leader": true,
+        "group_id": "GRP-MVYSR0MX-UOF",
+        "leader_name": "Lina María Pascumal Ijaji",
+        "leader_document": "1151952293",
+        "registered_at": "2026-11-02T05:06:42.297Z",
+        "slot_number": 14,
+        "checked_in": false,
+        "checked_in_at": null
+      }
     },
     {
       "slot": 15,
@@ -759,6 +772,22 @@
       "leader_document": "999999",
       "registered_at": "2026-11-02T01:56:32.254Z",
       "slot_number": 13,
+      "checked_in": false,
+      "checked_in_at": null,
+      "status": "active",
+      "companions_registered": []
+    },
+    {
+      "code": "SARA15-PM5WRE",
+      "name": "Lina María Pascumal Ijaji",
+      "document": "1151952293",
+      "email": "linapas07@gmail.com",
+      "is_leader": true,
+      "group_id": "GRP-MVYSR0MX-UOF",
+      "leader_name": "Lina María Pascumal Ijaji",
+      "leader_document": "1151952293",
+      "registered_at": "2026-11-02T05:06:42.297Z",
+      "slot_number": 14,
       "checked_in": false,
       "checked_in_at": null,
       "status": "active",
