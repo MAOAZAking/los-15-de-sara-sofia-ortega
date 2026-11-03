@@ -250,7 +250,20 @@
     },
     {
       "slot": 15,
-      "guest": null
+      "guest": {
+        "code": "SARA15-CV4ZCW",
+        "name": "María Magdalena Ortega",
+        "document": "31973781",
+        "email": "MariaMagdalenaortegazambrano@gmail.com",
+        "is_leader": true,
+        "group_id": "GRP-MW11SAQS-E7O",
+        "leader_name": "María Magdalena Ortega",
+        "leader_document": "31973781",
+        "registered_at": "2026-11-03T18:55:10.948Z",
+        "slot_number": 15,
+        "checked_in": false,
+        "checked_in_at": null
+      }
     },
     {
       "slot": 16,
@@ -788,6 +801,22 @@
       "leader_document": "1151952293",
       "registered_at": "2026-11-02T05:06:42.297Z",
       "slot_number": 14,
+      "checked_in": false,
+      "checked_in_at": null,
+      "status": "active",
+      "companions_registered": []
+    },
+    {
+      "code": "SARA15-CV4ZCW",
+      "name": "María Magdalena Ortega",
+      "document": "31973781",
+      "email": "MariaMagdalenaortegazambrano@gmail.com",
+      "is_leader": true,
+      "group_id": "GRP-MW11SAQS-E7O",
+      "leader_name": "María Magdalena Ortega",
+      "leader_document": "31973781",
+      "registered_at": "2026-11-03T18:55:10.948Z",
+      "slot_number": 15,
       "checked_in": false,
       "checked_in_at": null,
       "status": "active",
