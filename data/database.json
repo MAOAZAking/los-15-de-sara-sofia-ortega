@@ -267,7 +267,20 @@
     },
     {
       "slot": 16,
-      "guest": null
+      "guest": {
+        "code": "SARA15-YY2D2N",
+        "name": "José Luis Moreno",
+        "document": "16645676",
+        "email": "mariamagdalenaortegazambrano@gmail.com",
+        "is_leader": true,
+        "group_id": "GRP-MW11WBFN-Q7C",
+        "leader_name": "José Luis Moreno",
+        "leader_document": "16645676",
+        "registered_at": "2026-11-03T18:58:18.467Z",
+        "slot_number": 16,
+        "checked_in": false,
+        "checked_in_at": null
+      }
     },
     {
       "slot": 17,
@@ -817,6 +830,22 @@
       "leader_document": "31973781",
       "registered_at": "2026-11-03T18:55:10.948Z",
       "slot_number": 15,
+      "checked_in": false,
+      "checked_in_at": null,
+      "status": "active",
+      "companions_registered": []
+    },
+    {
+      "code": "SARA15-YY2D2N",
+      "name": "José Luis Moreno",
+      "document": "16645676",
+      "email": "mariamagdalenaortegazambrano@gmail.com",
+      "is_leader": true,
+      "group_id": "GRP-MW11WBFN-Q7C",
+      "leader_name": "José Luis Moreno",
+      "leader_document": "16645676",
+      "registered_at": "2026-11-03T18:58:18.467Z",
+      "slot_number": 16,
       "checked_in": false,
       "checked_in_at": null,
       "status": "active",
