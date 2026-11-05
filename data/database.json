@@ -284,7 +284,20 @@
     },
     {
       "slot": 17,
-      "guest": null
+      "guest": {
+        "code": "SARA15-PS922L",
+        "name": "Paulina Andulce hurtado",
+        "document": "38642050",
+        "email": "paulinaandulce28@gmail.com",
+        "is_leader": true,
+        "group_id": "GRP-MW3Y42D3-L2I",
+        "leader_name": "Paulina Andulce hurtado",
+        "leader_document": "38642050",
+        "registered_at": "2026-11-05T19:35:40.023Z",
+        "slot_number": 17,
+        "checked_in": false,
+        "checked_in_at": null
+      }
     },
     {
       "slot": 18,
@@ -846,6 +859,22 @@
       "leader_document": "16645676",
       "registered_at": "2026-11-03T18:58:18.467Z",
       "slot_number": 16,
+      "checked_in": false,
+      "checked_in_at": null,
+      "status": "active",
+      "companions_registered": []
+    },
+    {
+      "code": "SARA15-PS922L",
+      "name": "Paulina Andulce hurtado",
+      "document": "38642050",
+      "email": "paulinaandulce28@gmail.com",
+      "is_leader": true,
+      "group_id": "GRP-MW3Y42D3-L2I",
+      "leader_name": "Paulina Andulce hurtado",
+      "leader_document": "38642050",
+      "registered_at": "2026-11-05T19:35:40.023Z",
+      "slot_number": 17,
       "checked_in": false,
       "checked_in_at": null,
       "status": "active",
