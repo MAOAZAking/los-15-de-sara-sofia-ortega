@@ -318,7 +318,20 @@
     },
     {
       "slot": 19,
-      "guest": null
+      "guest": {
+        "code": "SARA15-X2K4D2",
+        "name": "Ruth Jiménez",
+        "document": "31962714",
+        "email": "rutheney10@gmail.com",
+        "is_leader": true,
+        "group_id": "GRP-MW71NF9F-FOY",
+        "leader_name": "Ruth Jiménez",
+        "leader_document": "31962714",
+        "registered_at": "2026-11-07T23:38:00.579Z",
+        "slot_number": 19,
+        "checked_in": false,
+        "checked_in_at": null
+      }
     },
     {
       "slot": 20,
@@ -904,6 +917,22 @@
       "leader_document": "27498784",
       "registered_at": "2026-11-07T18:07:39.682Z",
       "slot_number": 18,
+      "checked_in": false,
+      "checked_in_at": null,
+      "status": "active",
+      "companions_registered": []
+    },
+    {
+      "code": "SARA15-X2K4D2",
+      "name": "Ruth Jiménez",
+      "document": "31962714",
+      "email": "rutheney10@gmail.com",
+      "is_leader": true,
+      "group_id": "GRP-MW71NF9F-FOY",
+      "leader_name": "Ruth Jiménez",
+      "leader_document": "31962714",
+      "registered_at": "2026-11-07T23:38:00.579Z",
+      "slot_number": 19,
       "checked_in": false,
       "checked_in_at": null,
       "status": "active",
