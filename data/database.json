@@ -301,7 +301,20 @@
     },
     {
       "slot": 18,
-      "guest": null
+      "guest": {
+        "code": "SARA15-DYHTUR",
+        "name": "Luz maria Zambrano",
+        "document": "27498784",
+        "email": "iamconcentrate777@gmail.com",
+        "is_leader": true,
+        "group_id": "GRP-MW6PULCX-BI3",
+        "leader_name": "Luz maria Zambrano",
+        "leader_document": "27498784",
+        "registered_at": "2026-11-07T18:07:39.682Z",
+        "slot_number": 18,
+        "checked_in": false,
+        "checked_in_at": null
+      }
     },
     {
       "slot": 19,
@@ -875,6 +888,22 @@
       "leader_document": "38642050",
       "registered_at": "2026-11-05T19:35:40.023Z",
       "slot_number": 17,
+      "checked_in": false,
+      "checked_in_at": null,
+      "status": "active",
+      "companions_registered": []
+    },
+    {
+      "code": "SARA15-DYHTUR",
+      "name": "Luz maria Zambrano",
+      "document": "27498784",
+      "email": "iamconcentrate777@gmail.com",
+      "is_leader": true,
+      "group_id": "GRP-MW6PULCX-BI3",
+      "leader_name": "Luz maria Zambrano",
+      "leader_document": "27498784",
+      "registered_at": "2026-11-07T18:07:39.682Z",
+      "slot_number": 18,
       "checked_in": false,
       "checked_in_at": null,
       "status": "active",
