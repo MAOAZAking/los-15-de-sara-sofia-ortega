@@ -335,7 +335,20 @@
     },
     {
       "slot": 20,
-      "guest": null
+      "guest": {
+        "code": "SARA15-Y5CZMS",
+        "name": "Julieth Noguera",
+        "document": "1143859597",
+        "email": "julieth.noguera1994@gmail.com",
+        "is_leader": true,
+        "group_id": "GRP-MW75VH1I-MHU",
+        "leader_name": "Julieth Noguera",
+        "leader_document": "1143859597",
+        "registered_at": "2026-11-08T01:36:14.598Z",
+        "slot_number": 20,
+        "checked_in": false,
+        "checked_in_at": null
+      }
     },
     {
       "slot": 21,
@@ -933,6 +946,22 @@
       "leader_document": "31962714",
       "registered_at": "2026-11-07T23:38:00.579Z",
       "slot_number": 19,
+      "checked_in": false,
+      "checked_in_at": null,
+      "status": "active",
+      "companions_registered": []
+    },
+    {
+      "code": "SARA15-Y5CZMS",
+      "name": "Julieth Noguera",
+      "document": "1143859597",
+      "email": "julieth.noguera1994@gmail.com",
+      "is_leader": true,
+      "group_id": "GRP-MW75VH1I-MHU",
+      "leader_name": "Julieth Noguera",
+      "leader_document": "1143859597",
+      "registered_at": "2026-11-08T01:36:14.598Z",
+      "slot_number": 20,
       "checked_in": false,
       "checked_in_at": null,
       "status": "active",
