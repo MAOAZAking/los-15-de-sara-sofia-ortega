@@ -369,7 +369,20 @@
     },
     {
       "slot": 22,
-      "guest": null
+      "guest": {
+        "code": "SARA15-4HEAR7",
+        "name": "DIEGO SOLARTE ROMERO",
+        "document": "16728874",
+        "email": "solartediego945@gmail.com",
+        "is_leader": true,
+        "group_id": "GRP-MW7X8YNJ-P86",
+        "leader_name": "DIEGO SOLARTE ROMERO",
+        "leader_document": "16728874",
+        "registered_at": "2026-11-08T14:22:33.583Z",
+        "slot_number": 22,
+        "checked_in": false,
+        "checked_in_at": null
+      }
     },
     {
       "slot": 23,
@@ -991,6 +1004,22 @@
       "leader_document": "94430992",
       "registered_at": "2026-11-08T02:40:21.899Z",
       "slot_number": 21,
+      "checked_in": false,
+      "checked_in_at": null,
+      "status": "active",
+      "companions_registered": []
+    },
+    {
+      "code": "SARA15-4HEAR7",
+      "name": "DIEGO SOLARTE ROMERO",
+      "document": "16728874",
+      "email": "solartediego945@gmail.com",
+      "is_leader": true,
+      "group_id": "GRP-MW7X8YNJ-P86",
+      "leader_name": "DIEGO SOLARTE ROMERO",
+      "leader_document": "16728874",
+      "registered_at": "2026-11-08T14:22:33.583Z",
+      "slot_number": 22,
       "checked_in": false,
       "checked_in_at": null,
       "status": "active",
