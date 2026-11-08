@@ -352,7 +352,20 @@
     },
     {
       "slot": 21,
-      "guest": null
+      "guest": {
+        "code": "SARA15-KVDAYS",
+        "name": "Luis alfonso vera Montenegro",
+        "document": "94430992",
+        "email": "lveramontenegro@gmail.com",
+        "is_leader": true,
+        "group_id": "GRP-MW785XMZ-7B5",
+        "leader_name": "Luis alfonso vera Montenegro",
+        "leader_document": "94430992",
+        "registered_at": "2026-11-08T02:40:21.899Z",
+        "slot_number": 21,
+        "checked_in": false,
+        "checked_in_at": null
+      }
     },
     {
       "slot": 22,
@@ -962,6 +975,22 @@
       "leader_document": "1143859597",
       "registered_at": "2026-11-08T01:36:14.598Z",
       "slot_number": 20,
+      "checked_in": false,
+      "checked_in_at": null,
+      "status": "active",
+      "companions_registered": []
+    },
+    {
+      "code": "SARA15-KVDAYS",
+      "name": "Luis alfonso vera Montenegro",
+      "document": "94430992",
+      "email": "lveramontenegro@gmail.com",
+      "is_leader": true,
+      "group_id": "GRP-MW785XMZ-7B5",
+      "leader_name": "Luis alfonso vera Montenegro",
+      "leader_document": "94430992",
+      "registered_at": "2026-11-08T02:40:21.899Z",
+      "slot_number": 21,
       "checked_in": false,
       "checked_in_at": null,
       "status": "active",
