@@ -386,7 +386,20 @@
     },
     {
       "slot": 23,
-      "guest": null
+      "guest": {
+        "code": "SARA15-8FQUZN",
+        "name": "Teresa Ortega",
+        "document": "25706507",
+        "email": "tereorza64@gmail.com",
+        "is_leader": true,
+        "group_id": "GRP-MW9SV8L5-MCP",
+        "leader_name": "Teresa Ortega",
+        "leader_document": "25706507",
+        "registered_at": "2026-11-09T21:55:27.162Z",
+        "slot_number": 23,
+        "checked_in": false,
+        "checked_in_at": null
+      }
     },
     {
       "slot": 24,
@@ -1020,6 +1033,22 @@
       "leader_document": "16728874",
       "registered_at": "2026-11-08T14:22:33.583Z",
       "slot_number": 22,
+      "checked_in": false,
+      "checked_in_at": null,
+      "status": "active",
+      "companions_registered": []
+    },
+    {
+      "code": "SARA15-8FQUZN",
+      "name": "Teresa Ortega",
+      "document": "25706507",
+      "email": "tereorza64@gmail.com",
+      "is_leader": true,
+      "group_id": "GRP-MW9SV8L5-MCP",
+      "leader_name": "Teresa Ortega",
+      "leader_document": "25706507",
+      "registered_at": "2026-11-09T21:55:27.162Z",
+      "slot_number": 23,
       "checked_in": false,
       "checked_in_at": null,
       "status": "active",
