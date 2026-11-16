@@ -420,7 +420,20 @@
     },
     {
       "slot": 25,
-      "guest": null
+      "guest": {
+        "code": "SARA15-LVDAVA",
+        "name": "Jose david Moreno ortega",
+        "document": "1130681628",
+        "email": "david-807@hotmail.com",
+        "is_leader": true,
+        "group_id": "GRP-MWJVC0O9-CIU",
+        "leader_name": "Jose david Moreno ortega",
+        "leader_document": "1130681628",
+        "registered_at": "2026-11-16T23:02:11.049Z",
+        "slot_number": 25,
+        "checked_in": false,
+        "checked_in_at": null
+      }
     },
     {
       "slot": 26,
@@ -1078,6 +1091,22 @@
       "leader_document": "29113198",
       "registered_at": "2026-11-16T21:47:56.238Z",
       "slot_number": 24,
+      "checked_in": false,
+      "checked_in_at": null,
+      "status": "active",
+      "companions_registered": []
+    },
+    {
+      "code": "SARA15-LVDAVA",
+      "name": "Jose david Moreno ortega",
+      "document": "1130681628",
+      "email": "david-807@hotmail.com",
+      "is_leader": true,
+      "group_id": "GRP-MWJVC0O9-CIU",
+      "leader_name": "Jose david Moreno ortega",
+      "leader_document": "1130681628",
+      "registered_at": "2026-11-16T23:02:11.049Z",
+      "slot_number": 25,
       "checked_in": false,
       "checked_in_at": null,
       "status": "active",
