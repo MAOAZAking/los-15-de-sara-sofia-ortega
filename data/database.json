@@ -403,7 +403,20 @@
     },
     {
       "slot": 24,
-      "guest": null
+      "guest": {
+        "code": "SARA15-V5PC3R",
+        "name": "Martha tulande",
+        "document": "29113198",
+        "email": "marthatulande78@gmail.com",
+        "is_leader": true,
+        "group_id": "GRP-MWJSOJBI-QY4",
+        "leader_name": "Martha tulande",
+        "leader_document": "29113198",
+        "registered_at": "2026-11-16T21:47:56.238Z",
+        "slot_number": 24,
+        "checked_in": false,
+        "checked_in_at": null
+      }
     },
     {
       "slot": 25,
@@ -1049,6 +1062,22 @@
       "leader_document": "25706507",
       "registered_at": "2026-11-09T21:55:27.162Z",
       "slot_number": 23,
+      "checked_in": false,
+      "checked_in_at": null,
+      "status": "active",
+      "companions_registered": []
+    },
+    {
+      "code": "SARA15-V5PC3R",
+      "name": "Martha tulande",
+      "document": "29113198",
+      "email": "marthatulande78@gmail.com",
+      "is_leader": true,
+      "group_id": "GRP-MWJSOJBI-QY4",
+      "leader_name": "Martha tulande",
+      "leader_document": "29113198",
+      "registered_at": "2026-11-16T21:47:56.238Z",
+      "slot_number": 24,
       "checked_in": false,
       "checked_in_at": null,
       "status": "active",
